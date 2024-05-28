@@ -1,9 +1,9 @@
 const Step = () => {
   return (
-    <section className="text-gray-600 body-font">
-        <h2 className="title-font text-3xl font-medium text-gray-900 text-center">
-          Web siteda qanday foydalanish haqida video va text qo`llanma
-        </h2>
+    <section className="text-gray-600 body-font mt-8">
+      <h2 className="title-font text-3xl font-medium text-gray-900 text-center">
+        Узнайте за 2 минуты, как создать свой арт-объект с Mozabrick
+      </h2>
       <div className="container py-24 mx-auto flex flex-wrap">
         <div className="flex flex-wrap w-full">
           <div className="lg:w-2/5 md:w-1/2 md:pr-10 md:py-6">
@@ -26,8 +26,7 @@ const Step = () => {
                   STEP 1
                 </h2>
                 <p className="leading-relaxed">
-                  VHS cornhole pop-up, try-hard 8-bit iceland helvetica. Kinfolk
-                  bespoke try-hard cliche palo santo offal.
+                  Купи набор фото-конструктора Mozabrick
                 </p>
               </div>
             </div>
@@ -50,8 +49,7 @@ const Step = () => {
                   STEP 2
                 </h2>
                 <p className="leading-relaxed">
-                  Vice migas literally kitsch +1 pok pok. Truffaut hot chicken
-                  slow-carb health goth, vape typewriter.
+                  Загрузи любое фото в наш генератор
                 </p>
               </div>
             </div>
@@ -75,8 +73,8 @@ const Step = () => {
                   STEP 3
                 </h2>
                 <p className="leading-relaxed">
-                  Coloring book nar whal glossier master cleanse umami. Salvia
-                  +1 master cleanse blog taiyaki.
+                  Моментально получи инструкцию по сборке! Пересобирай с новыми
+                  фотографиями беско- нечно!
                 </p>
               </div>
             </div>
@@ -100,8 +98,7 @@ const Step = () => {
                   STEP 4
                 </h2>
                 <p className="leading-relaxed">
-                  VHS cornhole pop-up, try-hard 8-bit iceland helvetica. Kinfolk
-                  bespoke try-hard cliche palo santo offal.
+                  Посмотри, как будет выглядеть твоя картина перед покупкой
                 </p>
               </div>
             </div>
@@ -121,18 +118,25 @@ const Step = () => {
                 <h2 className="font-medium title-font text-sm text-gray-900 mb-1 tracking-wider">
                   FINISH
                 </h2>
-                <p className="leading-relaxed">
+                {/* <p className="leading-relaxed">
                   Pitchfork ugh tattooed scenester echo park gastropub whatever
                   cold-pressed retro.
-                </p>
+                </p> */}
               </div>
             </div>
           </div>
-          <img
+          {/* <img
             className="lg:w-3/5 md:w-1/2 object-cover object-center rounded-lg md:mt-0 mt-12"
             src="https://dummyimage.com/1200x500"
             alt="step"
-          />
+          /> */}
+          <iframe
+            src="https://www.youtube.com/embed/YnVywWHezVw"
+            title="MOZABRICK бесконечная пиксель-арт мозаика из вашей фотографии. Хит продаж!"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            className="lg:w-3/5 md:w-1/2 object-cover object-center rounded-lg md:mt-0 mt-12"
+          ></iframe>
         </div>
       </div>
     </section>

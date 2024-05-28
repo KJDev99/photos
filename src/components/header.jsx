@@ -30,27 +30,27 @@ const Header = () => {
         >
           <Link
             to={"/"}
-            className="mr-5 max-md:hover:text-slate-500 hover:text-gray-900"
+            className="mr-5 max-md:hover:text-slate-500 hover:text-gray-900 uppercase"
           >
-            Home
+            главное меню
           </Link>
           <Link
             to={"/katalog"}
             className="mr-5 max-md:hover:text-slate-500 hover:text-gray-900"
           >
-            Katalog
+            КАТАЛОГ
           </Link>
           <Link
             to={"/about"}
             className="mr-5 max-md:hover:text-slate-500 hover:text-gray-900"
           >
-            About
+            О MOZABRICK
           </Link>
           <Link
             to={"/contact"}
             className="mr-5 max-md:hover:text-slate-500 hover:text-gray-900"
           >
-            Contact
+            КОНТАКТЫ
           </Link>
         </nav>
         {/* <button className="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base  md:mt-0">
