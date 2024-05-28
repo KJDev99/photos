@@ -48,13 +48,20 @@ function ImgUpload() {
     setColors(newColors);
   }
 
+  function removeLeadingZero(number) {
+    if (number.startsWith("0") && number !== "0") {
+      return number.substring(1);
+    }
+    return number;
+  }
+
   return (
     <div className="container mx-auto grow">
-      <h2 className="text-3xl my-6">Rasm Yuklash:</h2>
+      <h2 className="text-3xl my-6">Загрузить изображение:</h2>
       <div className="input-container">
         <div className="flex md:mx-36 max-md:flex-col">
           <label className="flex md:w-1/2 max-md:w-full mb-5">
-            <p className="w-[100px] my-1">Width (mm):</p>
+            <p className="w-max my-1">Ширина (mm):</p>
             <input
               className="border mx-3 px-2 py-1 rounded"
               type="number"
@@ -66,7 +73,7 @@ function ImgUpload() {
             </p>
           </label>
           <label className="flex md:w-1/2 max-md:w-full mb-5">
-            <p className="w-[100px] my-1">Height (mm):</p>
+            <p className="w-max my-1">Высота (mm):</p>
             <input
               className="border mx-3 px-2 py-1 rounded"
               type="number"
@@ -79,7 +86,7 @@ function ImgUpload() {
           </label>
         </div>
         <label className="md:mx-36 mb-10 flex">
-          <p className="w-[110px] my-1">Upload Image:</p>
+          <p className="w-max my-1 mr-3">Загрузить изображение:</p>
           <input type="file" accept="image/*" onChange={handleImageChange} />
         </label>
       </div>
@@ -115,11 +122,11 @@ function ImgUpload() {
         ""
       )}
 
-      {image && (
+      {!image && (
         <div className="flex flex-col">
           <div className="mx-auto flex w-full justify-center my-4">
             <label className="mx-2 flex items-center">
-              Scale:
+              Шкала:
               <input
                 type="range"
                 min="1"
@@ -147,11 +154,13 @@ function ImgUpload() {
                 type="number"
                 value={colors.length}
                 onChange={(e) => {
-                  const count = parseInt(e.target.value);
+                  const count = parseInt(removeLeadingZero(e.target.value)); // 0 bilan boshlanmagan son
                   const newColors = Array.from({ length: count }, () => ({
                     color: getRandomColor(),
                   }));
                   setColors(newColors);
+                  console.log(colors.length);
+                  
                 }}
               />
             </label>
@@ -159,21 +168,23 @@ function ImgUpload() {
               изменять
             </button>
           </div>
-          <div className="flex flex-wrap gap-4">
-            {colors.map((item, index) => (
-              <div key={index} className="rounded h-10 w-10 flex flex-col">
-                <input
-                  className="rounded color-picker"
-                  type="color"
-                  id={`colorPicker${index}`}
-                  value={item.color}
-                  onChange={(e) => handleChangeColor(index, e.target.value)}
-                />
-                <label className="text-xs" htmlFor={`colorPicker${index}`}>
-                  {item.color}
-                </label>
-              </div>
-            ))}
+          <div className="flex flex-wrap gap-4 mx-auto">
+            {colors.length > 0
+              ? colors.map((item, index) => (
+                  <div key={index} className="rounded h-10 w-10 flex flex-col">
+                    <input
+                      className="rounded color-picker"
+                      type="color"
+                      id={`colorPicker${index}`}
+                      value={item.color}
+                      onChange={(e) => handleChangeColor(index, e.target.value)}
+                    />
+                    <label className="text-xs" htmlFor={`colorPicker${index}`}>
+                      {item.color}
+                    </label>
+                  </div>
+                ))
+              : "rang yoq"}
           </div>
         </div>
       )}
