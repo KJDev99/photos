@@ -122,7 +122,7 @@ function ImgUpload() {
         ""
       )}
 
-      {!image && (
+      {image && (
         <div className="flex flex-col">
           <div className="mx-auto flex w-full justify-center my-4">
             <label className="mx-2 flex items-center">
