@@ -5,7 +5,7 @@ import NavbarTop from "../components/navbar-top";
 
 const ContactPage = () => {
   return (
-    <div>
+    <div className="wrapper">
       <NavbarTop />
       <Header />
       <Contact />

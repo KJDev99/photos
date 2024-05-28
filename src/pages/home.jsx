@@ -9,7 +9,7 @@ import Step from "../components/step";
 
 const Home = () => {
   return (
-    <div>
+    <div className="wrapper">
       <NavbarTop />
       <Header />
       <Hero />

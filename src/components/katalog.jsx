@@ -1,6 +1,8 @@
+import { Link } from "react-router-dom";
+
 const Katalog = () => {
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto grow">
       <section className="text-gray-600 body-font">
         <div className="container px-5 pt-12 pb-16 mx-auto">
           <div className="flex flex-wrap -m-4">
@@ -23,9 +25,11 @@ const Katalog = () => {
                     jianbing microdosing tousled waistcoat.
                   </p>
                   <div className="flex items-center justify-between flex-wrap ">
-                    <button className="flex text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg">
-                      Button
-                    </button>
+                    <Link to={"/img"}>
+                      <button className="flex text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg">
+                        Button
+                      </button>
+                    </Link>
                     <span className="mt-1">$16.00</span>
                   </div>
                 </div>

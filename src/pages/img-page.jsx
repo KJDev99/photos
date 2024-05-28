@@ -1,19 +1,17 @@
-import About from "../components/about";
 import Footer from "../components/footer";
 import Header from "../components/header";
+import ImgUpload from "../components/imp-upload";
 import NavbarTop from "../components/navbar-top";
-import Teams from "../components/teams";
-
-const AboutPage = () => {
+import "../App.css";
+const ImgPage = () => {
   return (
     <div className="wrapper">
       <NavbarTop />
       <Header />
-      <About />
-      <Teams />
+      <ImgUpload />
       <Footer />
     </div>
   );
 };
 
-export default AboutPage;
+export default ImgPage;

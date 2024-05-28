@@ -5,7 +5,7 @@ import NavbarTop from "../components/navbar-top";
 
 const KatalogPage = () => {
   return (
-    <div>
+    <div className="wrapper">
       <NavbarTop />
       <Header />
       <Katalog />
