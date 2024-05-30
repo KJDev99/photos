@@ -10,11 +10,12 @@ function ImgUpload() {
   const [imageFile, setImageFile] = useState(null);
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [colors, setColors] = useState([{ color: getRandomColor() }]);
+  const [colors, setColors] = useState([]);
   const [activeImage, setActiveImage] = useState(true);
   // const [imageVisible, setImageVisible] = useState(false);
   const [data, setData] = useState(null);
   const [fileName, setFileName] = useState("Файл не выбран");
+  const [numColors, setNumColors] = useState(0);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -43,28 +44,6 @@ function ImgUpload() {
     setRotation(rotation + 15);
   };
 
-  function getRandomColor() {
-    return (
-      "#" +
-      Math.floor(Math.random() * 16777215)
-        .toString(16)
-        .padStart(6, "0")
-    );
-  }
-
-  function handleChangeColor(index, newColor) {
-    const newColors = [...colors];
-    newColors[index] = { color: newColor };
-    setColors(newColors);
-  }
-
-  function removeLeadingZero(number) {
-    if (number.startsWith("0") && number !== "0") {
-      return number.substring(1);
-    }
-    return number;
-  }
-
   const handleUpload = async () => {
     if (imageFile) {
       const formData = new FormData();
@@ -89,16 +68,34 @@ function ImgUpload() {
   };
 
   useEffect(() => {
-    // Komponent yuklanganda GET so'rovini amalga oshiramiz
     axios
       .get("http://192.168.0.163:8000/upload/")
-      .then((response) => setData(response.data))
+      .then((response) => {
+        setData(response.data);
+        if (response.data.colors) {
+          const initialColors = response.data.colors.map((color) => ({
+            color: color.hex,
+          }));
+          setColors(initialColors);
+          setNumColors(response.data.colors.length);
+        }
+      })
       .catch((error) => console.error("Error:", error));
   }, []);
 
   const handleButtonClick = () => {
     setImage(`http://192.168.0.163:8000${data.image}`);
+    setColors(colors);
     console.log("edit image" + data.image);
+    console.log(colors);
+  };
+
+  const handleChangeColor = (index, newColor) => {
+    const updatedColors = colors.map((color, idx) =>
+      idx === index ? { ...color, color: newColor } : color
+    );
+    setColors(updatedColors);
+    console.log(colors, "changed color");
   };
 
   return (
@@ -216,25 +213,19 @@ function ImgUpload() {
             </div>
           ) : (
             <div>
-              <div className="mx-auto flex w-full justify-around items-center my-4 flex-wrap ">
+              <div className="mx-auto flex w-full justify-around items-center my-4 flex-wrap">
                 <label className="flex">
-                  <p className="my-1 capitalize">количество цветов:</p>
-                  <input
+                  <p className="my-1 capitalize">
+                    количество цветов: {numColors}
+                  </p>
+                  {/* <input
                     className="border mx-3 px-2 py-1 rounded"
                     type="number"
-                    value={colors.length}
-                    onChange={(e) => {
-                      const count = parseInt(removeLeadingZero(e.target.value));
-                      const newColors = Array.from({ length: count }, () => ({
-                        color: getRandomColor(),
-                      }));
-                      setColors(newColors);
-                      console.log(colors.length);
-                    }}
-                  />
+                    value={numColors}
+                  /> */}
                 </label>
                 <button
-                  className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg "
+                  className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
                   onClick={handleButtonClick}
                 >
                   изменять
