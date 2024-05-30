@@ -12,7 +12,7 @@ const Hero = () => {
             <p className="mb-8 leading-relaxed text-black text-2xl">
               Собирайте любые свои фотографии из кубиков конструктора!
             </p>
-            <Link to={"/katalog"} className="flex justify-center">
+            <Link to={"/img"} className="flex justify-center">
               <button className="inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg">
                 Купить конструктор
               </button>

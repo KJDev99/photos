@@ -23,7 +23,7 @@ const Header = () => {
           </svg>
           <span className="ml-3 text-xl">BRENT_NAME</span>
         </Link>
-        <nav
+        {/* <nav
           className={`max-md:mx-auto flex flex-wrap items-center text-base justify-center max-md:absolute max-md:flex-col max-md:left-1/2 max-md:translate-x-[-50%] max-md:bg-slate-800 max-md:w-4/5 py-5 rounded max-md:text-white max-md:z-50 ${
             !menuActive ? "max-md:top-20" : "max-md:top-[-150px]"
           }`}
@@ -52,7 +52,7 @@ const Header = () => {
           >
             КОНТАКТЫ
           </Link>
-        </nav>
+        </nav> */}
         {/* <button className="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base  md:mt-0">
           Button
           <svg
@@ -64,7 +64,7 @@ const Header = () => {
             <path d="M5 12h14M12 5l7 7-7 7"></path>
           </svg>
         </button> */}
-        {menuActive ? (
+        {/* {menuActive ? (
           <GiHamburgerMenu
             onClick={() => setMenuActive(!menuActive)}
             className="text-2xl md:hidden"
@@ -74,7 +74,7 @@ const Header = () => {
             onClick={() => setMenuActive(!menuActive)}
             className="text-2xl md:hidden"
           />
-        )}
+        )} */}
       </div>
     </header>
   );
