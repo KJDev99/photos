@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FaArrowRotateLeft, FaArrowRotateRight } from "react-icons/fa6";
 import axios from "axios";
 import "../App.css";
+import api from "../api/api";
 
 function ImgUpload() {
   const [width, setWidth] = useState("");
@@ -21,6 +22,7 @@ function ImgUpload() {
   const [inputValue, setInputValue] = useState("");
   const [timestamp, setTimestamp] = useState(Date.now());
   const [showMessage, setShowMessage] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleClose = () => {
     setShowMessage(false);
@@ -62,23 +64,21 @@ function ImgUpload() {
   };
 
   const handleUpload = async () => {
+    setLoading(true);
+
     if (imageFile) {
       const formData = new FormData();
       formData.append("image", imageFile);
 
       try {
-        const response = await axios.post(
-          "http://192.168.0.163:8000/upload/",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        const response = await api.post("/upload/", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         console.log("Image uploaded successfully:", response.data);
         setActiveImage(false);
-        getData("http://192.168.0.163:8000/upload/");
+        getData("/upload/");
       } catch (error) {
         console.error("Error uploading image:", error);
       }
@@ -86,13 +86,11 @@ function ImgUpload() {
   };
 
   const getData = (url) => {
-    axios
+    api
       .get(url)
       .then((response) => {
         setData(response.data);
-        setImage(
-          `http://192.168.0.163:8000${response.data.image}?timestamp=${timestamp}`
-        );
+        setImage(`${response.data.image}?timestamp=${timestamp}`);
         if (response.data.colors) {
           const initialColors = response.data.colors.map((color) => ({
             color: color.hex,
@@ -104,15 +102,14 @@ function ImgUpload() {
           setGetId(response.data.id);
         }
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => console.error("Error:", error))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     if (numColors > 0) {
-      axios
-        .get(
-          `http://192.168.0.163:8000/update-colors/${getId}/?limit_colors=${numColors}`
-        )
+      api
+        .get(`/update-colors/${getId}/?limit_colors=${numColors}`)
         .then((response) => {
           setGetId(response.data.id);
           setData(response.data);
@@ -130,11 +127,15 @@ function ImgUpload() {
           }
         })
         .catch(() => setShowMessage(true))
-        .finally(() => setTimeout(() => setShowMessage(false), 4000));
+        .finally(() => {
+          setLoading(false);
+          setTimeout(() => setShowMessage(false), 4000);
+        });
     }
   }, [numColors]);
 
   const handleButtonClick = () => {
+    setLoading(true);
     setHover(false);
     setNumColors(inputValue);
   };
@@ -233,6 +234,12 @@ function ImgUpload() {
         ""
       )}
 
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 z-50">
+          <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+        </div>
+      )}
+
       {image && (
         <div className="flex flex-col">
           {activeImage ? (
@@ -281,7 +288,7 @@ function ImgUpload() {
                     ) : (
                       <input
                         className="w-[100px]"
-                        placeholder="raqam"
+                        placeholder="число"
                         type="number"
                         value={inputValue}
                         onChange={handleInputChange}
