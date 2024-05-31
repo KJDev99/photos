@@ -9,15 +9,15 @@ import Step from "../components/step";
 
 const Home = () => {
   return (
-    <div className="wrapper">
+    <div className="wrapper h-screen">
       <NavbarTop />
       <Header />
       <Hero />
-      <Step />
-      <Cart />
-      <Galery />
-      <Opinion />
-      <Footer />
+      {/* <Step /> */}
+      {/* <Cart /> */}
+      {/* <Galery /> */}
+      {/* <Opinion /> */}
+      {/* <Footer /> */}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 const NavbarTop = () => {
   return (
-    <div className="container mx-auto max-md:hidden">
+    <div className="container mx-auto max-md:hidden h-[6%]">
       <div className="flex justify-center my-3">
         <a className="flex mx-4">
           <img src="./adress.svg" alt="email" />

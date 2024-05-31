@@ -6,7 +6,7 @@ import { useState } from "react";
 const Header = () => {
   const [menuActive, setMenuActive] = useState(true);
   return (
-    <header className="text-gray-600 body-font">
+    <header className="text-gray-600 body-font h-[10%]">
       <div className="container mx-auto flex flex-wrap md:flex-row items-center justify-between max-md:mt-4">
         <Link
           to={"/"}

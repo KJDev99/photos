@@ -16,6 +16,15 @@ function ImgUpload() {
   const [data, setData] = useState(null);
   const [fileName, setFileName] = useState("Файл не выбран");
   const [numColors, setNumColors] = useState(0);
+  const [getId, setGetId] = useState(0);
+  const [hover, setHover] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [timestamp, setTimestamp] = useState(Date.now());
+  const [showMessage, setShowMessage] = useState(false);
+
+  const handleClose = () => {
+    setShowMessage(false);
+  };
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -44,6 +53,14 @@ function ImgUpload() {
     setRotation(rotation + 15);
   };
 
+  const handleLabelHoverEnter = () => {
+    setHover(true);
+  };
+
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+
   const handleUpload = async () => {
     if (imageFile) {
       const formData = new FormData();
@@ -61,33 +78,65 @@ function ImgUpload() {
         );
         console.log("Image uploaded successfully:", response.data);
         setActiveImage(false);
+        getData("http://192.168.0.163:8000/upload/");
       } catch (error) {
         console.error("Error uploading image:", error);
       }
     }
   };
 
-  useEffect(() => {
+  const getData = (url) => {
     axios
-      .get("http://192.168.0.163:8000/upload/")
+      .get(url)
       .then((response) => {
         setData(response.data);
+        setImage(
+          `http://192.168.0.163:8000${response.data.image}?timestamp=${timestamp}`
+        );
         if (response.data.colors) {
           const initialColors = response.data.colors.map((color) => ({
             color: color.hex,
           }));
           setColors(initialColors);
+          console.log(response.data.image, "data");
+          console.log("Initial colors:", initialColors);
           setNumColors(response.data.colors.length);
+          setGetId(response.data.id);
         }
       })
       .catch((error) => console.error("Error:", error));
-  }, []);
+  };
+
+  useEffect(() => {
+    if (numColors > 0) {
+      axios
+        .get(
+          `http://192.168.0.163:8000/update-colors/${getId}/?limit_colors=${numColors}`
+        )
+        .then((response) => {
+          setGetId(response.data.id);
+          setData(response.data);
+          console.log(response.data);
+          setImage(`${response.data.image}?timestamp=${timestamp}`);
+          setTimestamp(Date.now());
+          console.log(response.data.image);
+          if (response.data.colors) {
+            const initialColors = response.data.colors.map((color) => ({
+              color: color.hex,
+            }));
+            setColors(initialColors);
+            console.log(response.data, "data");
+            console.log("Initial colors:", initialColors);
+          }
+        })
+        .catch(() => setShowMessage(true))
+        .finally(() => setTimeout(() => setShowMessage(false), 4000));
+    }
+  }, [numColors]);
 
   const handleButtonClick = () => {
-    setImage(`http://192.168.0.163:8000${data.image}`);
-    setColors(colors);
-    console.log("edit image" + data.image);
-    console.log(colors);
+    setHover(false);
+    setNumColors(inputValue);
   };
 
   const handleChangeColor = (index, newColor) => {
@@ -95,11 +144,18 @@ function ImgUpload() {
       idx === index ? { ...color, color: newColor } : color
     );
     setColors(updatedColors);
-    console.log(colors, "changed color");
   };
 
   return (
     <div className="container mx-auto grow">
+      {showMessage && (
+        <div
+          onClick={handleClose}
+          className="fixed right-0 top-5 w-[300px] h-16 bg-slate-700 text-white flex items-center justify-center rounded uppercase"
+        >
+          Количество цветов большое
+        </div>
+      )}
       <h2 className="text-3xl my-6">Загрузить изображение:</h2>
       {activeImage && (
         <div className="input-container">
@@ -158,7 +214,7 @@ function ImgUpload() {
         >
           {image && (
             <img
-              src={image}
+              src={`${image}`}
               alt="Uploaded"
               style={{
                 width: `${scale * 100}%`,
@@ -212,17 +268,26 @@ function ImgUpload() {
               </button>
             </div>
           ) : (
-            <div>
+            <div className="flex flex-col">
               <div className="mx-auto flex w-full justify-around items-center my-4 flex-wrap">
-                <label className="flex">
-                  <p className="my-1 capitalize">
-                    количество цветов: {numColors}
+                <label
+                  className="flex cursor-pointer"
+                  onClick={handleLabelHoverEnter}
+                >
+                  <p className="my-1 capitalize w-[400px] flex">
+                    <span className="mr-3">количество цветов:</span>
+                    {!hover ? (
+                      `${numColors}`
+                    ) : (
+                      <input
+                        className="w-[100px]"
+                        placeholder="raqam"
+                        type="number"
+                        value={inputValue}
+                        onChange={handleInputChange}
+                      />
+                    )}
                   </p>
-                  {/* <input
-                    className="border mx-3 px-2 py-1 rounded"
-                    type="number"
-                    value={numColors}
-                  /> */}
                 </label>
                 <button
                   className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
@@ -257,6 +322,12 @@ function ImgUpload() {
                     ))
                   : "rang yoq"}
               </div>
+              <button
+                className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-auto my-6"
+                // onClick={finish}
+              >
+                скачать
+              </button>
             </div>
           )}
         </div>
