@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { FaArrowRotateLeft, FaArrowRotateRight } from "react-icons/fa6";
-import axios from "axios";
 import "../App.css";
 import api from "../api/api";
 
@@ -90,7 +89,9 @@ function ImgUpload() {
       .get(url)
       .then((response) => {
         setData(response.data);
-        setImage(`${response.data.image}?timestamp=${timestamp}`);
+        setImage(
+          `${response.data.image}?timestamp=${timestamp}?${response.data.id}`
+        );
         if (response.data.colors) {
           const initialColors = response.data.colors.map((color) => ({
             color: color.hex,
@@ -100,10 +101,11 @@ function ImgUpload() {
           console.log("Initial colors:", initialColors);
           setNumColors(response.data.colors.length);
           setGetId(response.data.id);
+          setLoading(true);
         }
       })
       .catch((error) => console.error("Error:", error))
-      .finally(() => setLoading(false));
+      // .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -114,9 +116,9 @@ function ImgUpload() {
           setGetId(response.data.id);
           setData(response.data);
           console.log(response.data);
-          setImage(`${response.data.image}?timestamp=${timestamp}`);
+          setImage(`${response.data.image}?timestamp=${timestamp}?${response.data.id}?1`);
           setTimestamp(Date.now());
-          console.log(response.data.image);
+          console.log(response.data.image, "rasm kelishi!!!");
           if (response.data.colors) {
             const initialColors = response.data.colors.map((color) => ({
               color: color.hex,
@@ -235,7 +237,7 @@ function ImgUpload() {
       )}
 
       {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-75 z-50">
           <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
         </div>
       )}
