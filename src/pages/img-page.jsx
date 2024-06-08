@@ -1,15 +1,15 @@
-import Footer from "../components/footer";
+// import Footer from "../components/footer";
 import Header from "../components/header";
 import ImgUpload from "../components/imp-upload";
-import NavbarTop from "../components/navbar-top";
+// import NavbarTop from "../components/navbar-top";
 import "../App.css";
 const ImgPage = () => {
   return (
-    <div className="wrapper">
-      <NavbarTop />
+    <div className="wrapper mt-4">
+      {/* <NavbarTop /> */}
       <Header />
       <ImgUpload />
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

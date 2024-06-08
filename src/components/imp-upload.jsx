@@ -150,7 +150,7 @@ function ImgUpload() {
   };
 
   return (
-    <div className="container mx-auto grow">
+    <div className="container mx-auto">
       {showMessage && (
         <div
           onClick={handleClose}

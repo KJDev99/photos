@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
-import { GiHamburgerMenu } from "react-icons/gi";
-import { IoClose } from "react-icons/io5";
-import { useState } from "react";
+// import { GiHamburgerMenu } from "react-icons/gi";
+// import { IoClose } from "react-icons/io5";
+// import { useState } from "react";
+import NavbarTop from "../components/navbar-top";
 
 const Header = () => {
-  const [menuActive, setMenuActive] = useState(true);
+  // const [menuActive, setMenuActive] = useState(true);
   return (
     <header className="text-gray-600 body-font h-[10%]">
-      <div className="container mx-auto flex flex-wrap md:flex-row items-center justify-between max-md:mt-4">
+      <div className="container mx-auto flex flex-wrap md:flex-row items-center justify-between h-full">
         <Link
           to={"/"}
           className="flex title-font font-medium items-center text-gray-900 md:mb-0"
@@ -23,6 +24,9 @@ const Header = () => {
           </svg>
           <span className="ml-3 text-xl">BRENT_NAME</span>
         </Link>
+
+        <NavbarTop />
+
         {/* <nav
           className={`max-md:mx-auto flex flex-wrap items-center text-base justify-center max-md:absolute max-md:flex-col max-md:left-1/2 max-md:translate-x-[-50%] max-md:bg-slate-800 max-md:w-4/5 py-5 rounded max-md:text-white max-md:z-50 ${
             !menuActive ? "max-md:top-20" : "max-md:top-[-150px]"
@@ -71,7 +75,7 @@ const Header = () => {
           />
         ) : (
           <IoClose
-            onClick={() => setMenuActive(!menuActive)}
+          onClick={() => setMenuActive(!menuActive)}
             className="text-2xl md:hidden"
           />
         )} */}
