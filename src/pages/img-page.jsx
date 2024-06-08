@@ -5,7 +5,7 @@ import ImgUpload from "../components/imp-upload";
 import "../App.css";
 const ImgPage = () => {
   return (
-    <div className="wrapper mt-4">
+    <div className="wrapper pt-4">
       {/* <NavbarTop /> */}
       <Header />
       <ImgUpload />
