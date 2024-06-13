@@ -19,6 +19,7 @@ function ImgUpload() {
   const [getId, setGetId] = useState(0);
   const [hover, setHover] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [inputActive, setInputActive] = useState(false);
   const [timestamp, setTimestamp] = useState(Date.now());
   const [showMessage, setShowMessage] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -60,6 +61,7 @@ function ImgUpload() {
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
+    setInputActive(true);
   };
 
   const handleUpload = async () => {
@@ -97,6 +99,7 @@ function ImgUpload() {
             color: color.hex,
           }));
           setColors(initialColors);
+
           console.log(response.data.image, "data");
           console.log("Initial colors:", initialColors);
           setNumColors(response.data.colors.length);
@@ -104,8 +107,8 @@ function ImgUpload() {
           setLoading(true);
         }
       })
-      .catch((error) => console.error("Error:", error))
-      // .finally(() => setLoading(false));
+      .catch((error) => console.error("Error:", error));
+    // .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -116,7 +119,9 @@ function ImgUpload() {
           setGetId(response.data.id);
           setData(response.data);
           console.log(response.data);
-          setImage(`${response.data.image}?timestamp=${timestamp}?${response.data.id}?1`);
+          setImage(
+            `${response.data.image}?timestamp=${timestamp}?${response.data.id}?1`
+          );
           setTimestamp(Date.now());
           console.log(response.data.image, "rasm kelishi!!!");
           if (response.data.colors) {
@@ -136,10 +141,13 @@ function ImgUpload() {
     }
   }, [numColors]);
 
-  const handleButtonClick = () => {
-    setLoading(true);
-    setHover(false);
-    setNumColors(inputValue);
+  const handleButtonClick = (e) => {
+    if (inputActive) {
+      setLoading(true);
+      setHover(false);
+      setInputActive(false);
+      setNumColors(inputValue);
+    }
   };
 
   const handleChangeColor = (index, newColor) => {
@@ -147,6 +155,10 @@ function ImgUpload() {
       idx === index ? { ...color, color: newColor } : color
     );
     setColors(updatedColors);
+  };
+
+  const handleRefresh = () => {
+    window.location.reload();
   };
 
   return (
@@ -331,12 +343,20 @@ function ImgUpload() {
                     ))
                   : "rang yoq"}
               </div>
-              <button
-                className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-auto my-6"
-                // onClick={finish}
-              >
-                скачать
-              </button>
+              <div className="flex justify-center">
+                <button
+                  className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-10 my-10"
+                  onClick={handleRefresh}
+                >
+                  перезапуск
+                </button>
+                <button
+                  className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-10 my-10"
+                  // onClick={finish}
+                >
+                  скачать
+                </button>
+              </div>
             </div>
           )}
         </div>
