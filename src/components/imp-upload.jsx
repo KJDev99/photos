@@ -360,10 +360,12 @@ function ImgUpload() {
                   <p className="my-1 capitalize w-[400px] flex">
                     <span className="mr-3">количество цветов:</span>
                     {!hover ? (
-                      `${numColors}`
+                      <div className="w-[100px] border rounded px-1">
+                        {numColors}
+                      </div>
                     ) : (
                       <input
-                        className="w-[100px]"
+                        className="w-[100px] border rounded px-1"
                         placeholder="число"
                         type="number"
                         value={inputValue}
