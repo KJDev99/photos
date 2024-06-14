@@ -23,6 +23,9 @@ function ImgUpload() {
   const [timestamp, setTimestamp] = useState(Date.now());
   const [showMessage, setShowMessage] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const [backStep, setBackStep] = useState(1);
+  const [backDisable, setBackDisable] = useState(false);
 
   const handleClose = () => {
     setShowMessage(false);
@@ -86,6 +89,14 @@ function ImgUpload() {
     }
   };
 
+  const handleShowMore = () => {
+    setShowAll(true);
+  };
+
+  const handleHideColors = () => {
+    setShowAll(false);
+  };
+
   const getData = (url) => {
     api
       .get(url)
@@ -100,8 +111,7 @@ function ImgUpload() {
           }));
           setColors(initialColors);
 
-          console.log(response.data.image, "data");
-          console.log("Initial colors:", initialColors);
+          console.log(response.data, "data");
           setNumColors(response.data.colors.length);
           setGetId(response.data.id);
           setLoading(true);
@@ -114,11 +124,11 @@ function ImgUpload() {
   useEffect(() => {
     if (numColors > 0) {
       api
-        .get(`/update-colors/${getId}/?limit_colors=${numColors}`)
+        .get(`/update-colors/${getId}?limit_colors=${numColors}`)
         .then((response) => {
           setGetId(response.data.id);
           setData(response.data);
-          console.log(response.data);
+          console.log(data);
           setImage(
             `${response.data.image}?timestamp=${timestamp}?${response.data.id}?1`
           );
@@ -133,7 +143,11 @@ function ImgUpload() {
             console.log("Initial colors:", initialColors);
           }
         })
-        .catch(() => setShowMessage(true))
+        .catch(() => {
+          setShowMessage(true);
+          setNumColors(colors.length);
+          setInputValue(colors.length);
+        })
         .finally(() => {
           setLoading(false);
           setTimeout(() => setShowMessage(false), 4000);
@@ -141,12 +155,13 @@ function ImgUpload() {
     }
   }, [numColors]);
 
-  const handleButtonClick = (e) => {
+  const handleButtonClick = () => {
     if (inputActive) {
       setLoading(true);
       setHover(false);
       setInputActive(false);
       setNumColors(inputValue);
+      setBackDisable(true);
     }
   };
 
@@ -155,6 +170,35 @@ function ImgUpload() {
       idx === index ? { ...color, color: newColor } : color
     );
     setColors(updatedColors);
+  };
+
+  const imgBackId = (url) => {
+    api
+      .get(`http://192.168.0.163:9090/back/process/${getId - backStep}`)
+      .then((response) => {
+        setData(response.data);
+        setImage(
+          `${response.data.image}?timestamp=${timestamp}?${response.data.id}`
+        );
+        if (response.data.colors) {
+          const initialColors = response.data.colors.map((color) => ({
+            color: color.hex,
+          }));
+          setColors(initialColors);
+          console.log(`${url}/back/progress/${getId}`);
+          console.log(response.data, "data");
+          setNumColors(response.data.colors.length);
+          setGetId(response.data.id);
+          setLoading(true);
+          setBackStep(backStep + 2);
+          console.log(response.data.parent);
+          console.log(initialColors);
+          initialColors.length == 256
+            ? setBackDisable(false)
+            : setBackDisable(true);
+        }
+      })
+      .catch((error) => console.error("Error:", error));
   };
 
   const handleRefresh = () => {
@@ -171,7 +215,25 @@ function ImgUpload() {
           Количество цветов большое
         </div>
       )}
-      <h2 className="text-3xl my-6">Загрузить изображение:</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl my-6">Загрузить изображение:</h2>
+        {!activeImage && (
+          <div className="flex justify-center">
+            <button
+              className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-4 my-10"
+              onClick={handleRefresh}
+            >
+              перезапуск
+            </button>
+            <button
+              className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-4 my-10"
+              // onClick={finish}
+            >
+              скачать
+            </button>
+          </div>
+        )}
+      </div>
       {activeImage && (
         <div className="input-container">
           <div className="flex md:mx-36 max-md:flex-col">
@@ -249,7 +311,7 @@ function ImgUpload() {
       )}
 
       {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-75 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-500  z-50">
           <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
         </div>
       )}
@@ -257,8 +319,8 @@ function ImgUpload() {
       {image && (
         <div className="flex flex-col">
           {activeImage ? (
-            <div className="flex flex-col">
-              <div className="mx-auto flex w-full justify-center my-4">
+            <div className="flex justify-center items-center my-4">
+              <div className="mx-auto flex w-max justify-center my-4">
                 <label className="mx-2 flex items-center">
                   Шкала:
                   <input
@@ -290,7 +352,7 @@ function ImgUpload() {
             </div>
           ) : (
             <div className="flex flex-col">
-              <div className="mx-auto flex w-full justify-around items-center my-4 flex-wrap">
+              <div className="mx-auto flex w-full justify-between items-center my-4 flex-wrap">
                 <label
                   className="flex cursor-pointer"
                   onClick={handleLabelHoverEnter}
@@ -310,40 +372,75 @@ function ImgUpload() {
                     )}
                   </p>
                 </label>
-                <button
-                  className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
-                  onClick={handleButtonClick}
-                >
-                  изменять
-                </button>
+                <div className="flex ">
+                  <button
+                    className="uppercase mx-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+                    onClick={handleButtonClick}
+                  >
+                    изменять
+                  </button>
+                  {backDisable ? (
+                    <button
+                      className="uppercase mx-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+                      onClick={imgBackId}
+                    >
+                      назад
+                    </button>
+                  ) : (
+                    ""
+                  )}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-4 mx-auto">
-                {colors.length > 0
-                  ? colors.map((item, index) => (
-                      <div
-                        key={index}
-                        className="rounded h-10 w-10 flex flex-col"
+              <div>
+                <div className="flex flex-wrap gap-4 mx-auto justify-center">
+                  {colors.length > 0
+                    ? colors
+                        .slice(0, showAll ? colors.length : 20)
+                        .map((item, index) => (
+                          <div
+                            key={index}
+                            className="rounded h-10 w-10 flex flex-col"
+                          >
+                            <input
+                              className="rounded color-picker"
+                              type="color"
+                              id={`colorPicker${index}`}
+                              value={item.color}
+                              onChange={(e) =>
+                                handleChangeColor(index, e.target.value)
+                              }
+                            />
+                            <label
+                              className="text-xs"
+                              htmlFor={`colorPicker${index}`}
+                            >
+                              {item.color}
+                            </label>
+                          </div>
+                        ))
+                    : "rang yoq"}
+                </div>
+                {colors.length > 20 && (
+                  <div className="mt-4">
+                    {showAll ? (
+                      <p
+                        className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
+                        onClick={handleHideColors}
                       >
-                        <input
-                          className="rounded color-picker"
-                          type="color"
-                          id={`colorPicker${index}`}
-                          value={item.color}
-                          onChange={(e) =>
-                            handleChangeColor(index, e.target.value)
-                          }
-                        />
-                        <label
-                          className="text-xs"
-                          htmlFor={`colorPicker${index}`}
-                        >
-                          {item.color}
-                        </label>
-                      </div>
-                    ))
-                  : "rang yoq"}
+                        скрыть больше
+                      </p>
+                    ) : (
+                      <p
+                        className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
+                        onClick={handleShowMore}
+                      >
+                        Показать больше
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="flex justify-center">
+              {/* <div className="flex justify-center">
                 <button
                   className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-10 my-10"
                   onClick={handleRefresh}
@@ -356,7 +453,7 @@ function ImgUpload() {
                 >
                   скачать
                 </button>
-              </div>
+              </div> */}
             </div>
           )}
         </div>
