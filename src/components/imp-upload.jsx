@@ -63,17 +63,19 @@ function ImgUpload() {
   };
 
   const handleInputChange = (e) => {
-    setInputValue(e.target.value);
+    if (e.target.value > 256) {
+      setInputValue(256);
+    } else {
+      setInputValue(e.target.value);
+    }
     setInputActive(true);
   };
 
   const handleUpload = async () => {
     setLoading(true);
-
     if (imageFile) {
       const formData = new FormData();
       formData.append("image", imageFile);
-
       try {
         const response = await api.post("/upload/", formData, {
           headers: {
@@ -174,7 +176,7 @@ function ImgUpload() {
 
   const imgBackId = (url) => {
     api
-      .get(`http://192.168.0.163:9090/back/process/${getId - backStep}`)
+      .get(`http://31.129.99.177:8000/back/process/${getId - backStep}`)
       .then((response) => {
         setData(response.data);
         setImage(
@@ -353,27 +355,33 @@ function ImgUpload() {
           ) : (
             <div className="flex flex-col">
               <div className="mx-auto flex w-full justify-between items-center my-4 flex-wrap">
-                <label
-                  className="flex cursor-pointer"
-                  onClick={handleLabelHoverEnter}
-                >
-                  <p className="my-1 capitalize w-[400px] flex">
+                <div className="flex">
+                  <div className="my-1 capitalize w-max flex">
                     <span className="mr-3">количество цветов:</span>
-                    {!hover ? (
-                      <div className="w-[100px] border rounded px-1">
-                        {numColors}
-                      </div>
-                    ) : (
-                      <input
-                        className="w-[100px] border rounded px-1"
-                        placeholder="число"
-                        type="number"
-                        value={inputValue}
-                        onChange={handleInputChange}
-                      />
-                    )}
-                  </p>
-                </label>
+                    <div className="w-[100px] px-1">256</div>
+                  </div>
+                  <label
+                    className="flex cursor-pointer"
+                    onClick={handleLabelHoverEnter}
+                  >
+                    <div className="my-1 capitalize w-[400px] flex">
+                      <span className="mr-3">изменить количество цветов:</span>
+                      {!hover ? (
+                        <div className="w-[100px] border rounded px-1">
+                          {numColors}
+                        </div>
+                      ) : (
+                        <input
+                          className="w-[100px] border rounded px-1"
+                          placeholder="число"
+                          type="number"
+                          value={inputValue}
+                          onChange={handleInputChange}
+                        />
+                      )}
+                    </div>
+                  </label>
+                </div>
                 <div className="flex ">
                   <button
                     className="uppercase mx-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
