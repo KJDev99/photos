@@ -217,18 +217,20 @@ function ImgUpload() {
           Количество цветов большое
         </div>
       )}
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl my-6">Загрузить изображение:</h2>
+      <div className="flex justify-between items-center max-md:flex-col">
+        <h2 className="text-3xl my-6 max-md:text-xl max-md:my-3">
+          Загрузить изображение:
+        </h2>
         {!activeImage && (
           <div className="flex justify-center">
             <button
-              className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-4 my-10"
+              className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-4 my-10 max-md:my-4 max-md:py-2 max-md:px-4 max-md:text-sm"
               onClick={handleRefresh}
             >
               перезапуск
             </button>
             <button
-              className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-4 my-10"
+              className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-4 my-10 max-md:my-4 max-md:py-2 max-md:px-4 max-md:text-sm"
               // onClick={finish}
             >
               скачать
@@ -240,9 +242,9 @@ function ImgUpload() {
         <div className="input-container">
           <div className="flex md:mx-36 max-md:flex-col">
             <label className="flex md:w-1/2 max-md:w-full mb-5">
-              <p className="w-max my-1">Ширина (mm):</p>
+              <p className="w-max my-1 max-md:w-[110px]">Ширина (mm):</p>
               <input
-                className="border mx-3 px-2 py-1 rounded"
+                className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
                 type="number"
                 value={width}
                 onChange={(e) => setWidth(e.target.value)}
@@ -252,9 +254,9 @@ function ImgUpload() {
               </p>
             </label>
             <label className="flex md:w-1/2 max-md:w-full mb-5">
-              <p className="w-max my-1">Высота (mm):</p>
+              <p className="w-max my-1 max-md:w-[110px]">Высота (mm):</p>
               <input
-                className="border mx-3 px-2 py-1 rounded"
+                className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
                 type="number"
                 value={height}
                 onChange={(e) => setHeight(e.target.value)}
@@ -273,10 +275,12 @@ function ImgUpload() {
               accept="image/*"
               onChange={handleImageChange}
             />
-            <label htmlFor="file" className="file-label">
-              Выберите файл
-            </label>
-            <span className="file-name">{fileName}</span>
+            <div className="flex max-md:flex-col ">
+              <label htmlFor="file" className="file-label">
+                Выберите файл
+              </label>
+              <span className="file-name">{fileName}</span>
+            </div>
           </div>
         </div>
       )}
@@ -321,7 +325,7 @@ function ImgUpload() {
       {image && (
         <div className="flex flex-col">
           {activeImage ? (
-            <div className="flex justify-center items-center my-4">
+            <div className="flex justify-center items-center my-4 max-md:flex-col">
               <div className="mx-auto flex w-max justify-center my-4">
                 <label className="mx-2 flex items-center">
                   Шкала:
@@ -335,7 +339,7 @@ function ImgUpload() {
                     className="mx-2 mt-1"
                   />
                 </label>
-                <div className="mx-2">
+                <div className="mx-2 flex">
                   <button className="mx-1" onClick={rotateLeft}>
                     <FaArrowRotateLeft />
                   </button>
@@ -346,7 +350,7 @@ function ImgUpload() {
               </div>
 
               <button
-                className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg w-[200px] text-center mx-auto justify-center"
+                className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
                 onClick={handleUpload}
               >
                 Загрузить
@@ -355,7 +359,7 @@ function ImgUpload() {
           ) : (
             <div className="flex flex-col">
               <div className="mx-auto flex w-full justify-between items-center my-4 flex-wrap">
-                <div className="flex">
+                <div className="flex max-md:flex-col">
                   <div className="my-1 capitalize w-max flex">
                     <span className="mr-3">количество цветов:</span>
                     <div className="w-[100px] px-1">256</div>
@@ -364,7 +368,7 @@ function ImgUpload() {
                     className="flex cursor-pointer"
                     onClick={handleLabelHoverEnter}
                   >
-                    <div className="my-1 capitalize w-[400px] flex">
+                    <div className="my-1 capitalize  flex">
                       <span className="mr-3">изменить количество цветов:</span>
                       {!hover ? (
                         <div className="w-[100px] border rounded px-1">
@@ -382,16 +386,16 @@ function ImgUpload() {
                     </div>
                   </label>
                 </div>
-                <div className="flex ">
+                <div className="flex max-md:justify-center max-md:w-full">
                   <button
-                    className="uppercase mx-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+                    className=" uppercase mx-4 my-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg max-md:py-2 max-md:px-4 max-md:text-sm"
                     onClick={handleButtonClick}
                   >
                     изменять
                   </button>
                   {backDisable ? (
                     <button
-                      className="uppercase mx-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+                      className=" uppercase mx-4 my-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg max-md:py-2 max-md:px-4 max-md:text-sm"
                       onClick={imgBackId}
                     >
                       назад
@@ -431,7 +435,7 @@ function ImgUpload() {
                     : "rang yoq"}
                 </div>
                 {colors.length > 20 && (
-                  <div className="mt-4">
+                  <div className="my-4">
                     {showAll ? (
                       <p
                         className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
