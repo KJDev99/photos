@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FaArrowRotateLeft, FaArrowRotateRight } from "react-icons/fa6";
+import { MdKeyboardReturn } from "react-icons/md";
+
 import "../App.css";
 import api from "../api/api";
 
@@ -8,7 +10,6 @@ function ImgUpload() {
   const [height, setHeight] = useState("");
   const [image, setImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
-  const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [colors, setColors] = useState([]);
   const [activeImage, setActiveImage] = useState(true);
@@ -24,8 +25,71 @@ function ImgUpload() {
   const [showMessage, setShowMessage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [backStep, setBackStep] = useState(1);
+  // const [backStep, setBackStep] = useState(1);
   const [backDisable, setBackDisable] = useState(false);
+
+  const [scale, setScale] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [translateX, setTranslateX] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
+
+  const preventDefaults = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e) => {
+    preventDefaults(e);
+    const files = e.dataTransfer.files;
+    handleFiles(files);
+  };
+
+  const handleFiles = (files) => {
+    [...files].forEach(uploadFile);
+  };
+
+   const uploadFile = (file) => {
+        setImageFile(file); // Set the file for upload
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+            setImage(reader.result);
+        };
+    };
+
+  const handleWheel = (e) => {
+    e.stopPropagation();
+    const delta = e.deltaY || e.detail || e.wheelDelta;
+    if (delta > 0) {
+      setScale(scale * 1.1);
+    } else {
+      setScale(scale / 1.1);
+    }
+  };
+
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    setStartX(e.clientX);
+    setStartY(e.clientY);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      const dx = (e.clientX - startX) / scale;
+      const dy = (e.clientY - startY) / scale;
+      setTranslateX(translateX + dx);
+      setTranslateY(translateY + dy);
+      setStartX(e.clientX);
+      setStartY(e.clientY);
+    }
+  };
 
   const handleClose = () => {
     setShowMessage(false);
@@ -39,6 +103,7 @@ function ImgUpload() {
       setFileName(file.name);
       reader.onloadend = () => {
         setImage(reader.result);
+        console.log(image, "rasm2");
       };
       reader.readAsDataURL(file);
     } else {
@@ -46,16 +111,18 @@ function ImgUpload() {
     }
   };
 
-  const handleScaleChange = (event) => {
+  const handleScaleChange2 = (event) => {
     setScale(event.target.value);
   };
 
   const rotateLeft = () => {
     setRotation(rotation - 15);
+    console.log(rotation);
   };
 
   const rotateRight = () => {
     setRotation(rotation + 15);
+    console.log(rotation);
   };
 
   const handleLabelHoverEnter = () => {
@@ -157,7 +224,7 @@ function ImgUpload() {
     }
   }, [numColors]);
 
-  const handleButtonClick = () => {
+  const handleButtonClick = useCallback(() => {
     if (inputActive) {
       setLoading(true);
       setHover(false);
@@ -165,47 +232,62 @@ function ImgUpload() {
       setNumColors(inputValue);
       setBackDisable(true);
     }
-  };
+  }, [inputActive, inputValue]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Enter") {
+        handleButtonClick();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleButtonClick]);
 
   const handleChangeColor = (index, newColor) => {
     const updatedColors = colors.map((color, idx) =>
       idx === index ? { ...color, color: newColor } : color
     );
     setColors(updatedColors);
+    console.log(updatedColors);
   };
 
-  const imgBackId = (url) => {
-    api
-      .get(`http://31.129.99.177:8000/back/process/${getId - backStep}`)
-      .then((response) => {
-        setData(response.data);
-        setImage(
-          `${response.data.image}?timestamp=${timestamp}?${response.data.id}`
-        );
-        if (response.data.colors) {
-          const initialColors = response.data.colors.map((color) => ({
-            color: color.hex,
-          }));
-          setColors(initialColors);
-          console.log(`${url}/back/progress/${getId}`);
-          console.log(response.data, "data");
-          setNumColors(response.data.colors.length);
-          setGetId(response.data.id);
-          setLoading(true);
-          setBackStep(backStep + 2);
-          console.log(response.data.parent);
-          console.log(initialColors);
-          initialColors.length == 256
-            ? setBackDisable(false)
-            : setBackDisable(true);
-        }
-      })
-      .catch((error) => console.error("Error:", error));
-  };
+  // const imgBackId = (url) => {
+  //   api
+  //     .get(`http://31.129.99.177:8000/back/process/${getId - backStep}`)
+  //     .then((response) => {
+  //       setData(response.data);
+  //       setImage(
+  //         `${response.data.image}?timestamp=${timestamp}?${response.data.id}`
+  //       );
+  //       if (response.data.colors) {
+  //         const initialColors = response.data.colors.map((color) => ({
+  //           color: color.hex,
+  //         }));
+  //         setColors(initialColors);
+  //         console.log(`${url}/back/progress/${getId}`);
+  //         console.log(response.data, "data");
+  //         setNumColors(response.data.colors.length);
+  //         setGetId(response.data.id);
+  //         setLoading(true);
+  //         setBackStep(backStep + 2);
+  //         console.log(response.data.parent);
+  //         console.log(initialColors);
+  //         initialColors.length == 256
+  //           ? setBackDisable(false)
+  //           : setBackDisable(true);
+  //       }
+  //     })
+  //     .catch((error) => console.error("Error:", error));
+  // };
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
+  // const handleRefresh = () => {
+  //   window.location.reload();
+  // };
 
   return (
     <div className="container mx-auto">
@@ -218,10 +300,13 @@ function ImgUpload() {
         </div>
       )}
       <div className="flex justify-between items-center max-md:flex-col">
-        <h2 className="text-3xl my-6 max-md:text-xl max-md:my-3">
-          Загрузить изображение:
-        </h2>
-        {!activeImage && (
+        {activeImage && (
+          <h2 className="text-3xl my-6 max-md:text-xl max-md:my-3">
+            Загрузить изображение:
+          </h2>
+        )}
+
+        {/* {!activeImage && (
           <div className="flex justify-center">
             <button
               className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-4 my-10 max-md:my-4 max-md:py-2 max-md:px-4 max-md:text-sm"
@@ -236,36 +321,36 @@ function ImgUpload() {
               скачать
             </button>
           </div>
-        )}
+        )} */}
+      </div>
+      <div className="flex md:mx-36 max-md:flex-col">
+        <label className="flex md:w-1/2 max-md:w-full mb-5">
+          <p className="w-max my-1 max-md:w-[110px]">Ширина (mm):</p>
+          <input
+            className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
+            type="number"
+            value={width}
+            onChange={(e) => setWidth(e.target.value)}
+          />
+          <p className="my-1 font-medium">
+            {Math.floor(width * 3.7795275591)} px
+          </p>
+        </label>
+        <label className="flex md:w-1/2 max-md:w-full mb-5">
+          <p className="w-max my-1 max-md:w-[110px]">Высота (mm):</p>
+          <input
+            className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
+            type="number"
+            value={height}
+            onChange={(e) => setHeight(e.target.value)}
+          />
+          <p className="my-1 font-medium">
+            {Math.floor(height * 3.7795275591)} px
+          </p>
+        </label>
       </div>
       {activeImage && (
         <div className="input-container">
-          <div className="flex md:mx-36 max-md:flex-col">
-            <label className="flex md:w-1/2 max-md:w-full mb-5">
-              <p className="w-max my-1 max-md:w-[110px]">Ширина (mm):</p>
-              <input
-                className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
-                type="number"
-                value={width}
-                onChange={(e) => setWidth(e.target.value)}
-              />
-              <p className="my-1 font-medium">
-                {Math.floor(width * 3.7795275591)} px
-              </p>
-            </label>
-            <label className="flex md:w-1/2 max-md:w-full mb-5">
-              <p className="w-max my-1 max-md:w-[110px]">Высота (mm):</p>
-              <input
-                className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
-                type="number"
-                value={height}
-                onChange={(e) => setHeight(e.target.value)}
-              />
-              <p className="my-1 font-medium">
-                {Math.floor(height * 3.7795275591)} px
-              </p>
-            </label>
-          </div>
           <div className="md:mx-36 mb-10 flex items-center">
             <p className="w-max my-1 mr-3">Загрузить изображение:</p>
             <input
@@ -285,32 +370,47 @@ function ImgUpload() {
         </div>
       )}
       {width > 0 && height > 0 ? (
-        <div
-          className="rectangle mx-auto rounded"
-          style={{
-            width: `${width}mm`,
-            height: `${height}mm`,
-            border: "1px solid black",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          {image && (
-            <img
-              src={`${image}`}
-              alt="Uploaded"
-              style={{
-                width: `${scale * 100}%`,
-                height: `${scale * 100}%`,
-                transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`,
-                transformOrigin: "center center",
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                objectFit: "cover",
-              }}
-            />
-          )}
+        <div className="w-full overflow-x-auto ">
+          <div
+            className="rectangle mx-auto  !border-dashed"
+            style={{
+              width: `${3 * width}mm`,
+              height: `${3 * height}mm`,
+              border: "1px solid black",
+              position: "relative",
+              overflow: "hidden",
+            }}
+            onDragEnter={preventDefaults}
+            onDragOver={preventDefaults}
+            onDragLeave={preventDefaults}
+            onDrop={handleDrop}
+            onWheel={handleWheel}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+          >
+            {image ? (
+              <img
+                src={`${image}`}
+                alt="Uploaded"
+                style={{
+                  width: `${scale * 100}%`,
+                  height: `${scale * 100}%`,
+                  transform: `scale(${scale}) translate(${translateX}px, ${translateY}px) rotate(${rotation}deg)`,
+                  cursor: isDragging ? "grabbing" : "zoom-out",
+                  // transformOrigin: "center center",
+                  position: "absolute",
+                  top: "0%",
+                  left: "0%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex justify-center items-center">
+                Перетащите изображение сюда
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         ""
@@ -335,7 +435,7 @@ function ImgUpload() {
                     max="3"
                     step="0.1"
                     value={scale}
-                    onChange={handleScaleChange}
+                    onChange={handleScaleChange2}
                     className="mx-2 mt-1"
                   />
                 </label>
@@ -350,20 +450,20 @@ function ImgUpload() {
               </div>
 
               <button
-                className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
+                className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
                 onClick={handleUpload}
               >
-                Загрузить
+                Перевести&nbsp;в&nbsp;пиксели
               </button>
             </div>
           ) : (
             <div className="flex flex-col">
-              <div className="mx-auto flex w-full justify-between items-center my-4 flex-wrap">
+              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
                 <div className="flex max-md:flex-col">
-                  <div className="my-1 capitalize w-max flex">
+                  {/* <div className="my-1 capitalize w-max flex">
                     <span className="mr-3">количество цветов:</span>
                     <div className="w-[100px] px-1">256</div>
-                  </div>
+                  </div> */}
                   <label
                     className="flex cursor-pointer"
                     onClick={handleLabelHoverEnter}
@@ -388,21 +488,20 @@ function ImgUpload() {
                 </div>
                 <div className="flex max-md:justify-center max-md:w-full">
                   <button
-                    className=" uppercase mx-4 my-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg max-md:py-2 max-md:px-4 max-md:text-sm"
+                    className=" uppercase mx-4 my-2 inline-flex items-center justify-center text-white bg-indigo-500 border-0 py-2 px-10 focus:outline-none hover:bg-indigo-600 rounded text-lg max-md:py-2 max-md:px-4 max-md:text-sm"
                     onClick={handleButtonClick}
                   >
-                    изменять
+                    <MdKeyboardReturn className="mr-2 text-2xl mt-1" />
                   </button>
-                  {backDisable ? (
-                    <button
-                      className=" uppercase mx-4 my-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg max-md:py-2 max-md:px-4 max-md:text-sm"
-                      onClick={imgBackId}
-                    >
-                      назад
-                    </button>
-                  ) : (
-                    ""
-                  )}
+                  {backDisable
+                    ? // <button
+                      //   className=" uppercase mx-4 my-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg max-md:py-2 max-md:px-4 max-md:text-sm"
+                      //   onClick={imgBackId}
+                      // >
+                      //   назад
+                      // </button>
+                      ""
+                    : ""}
                 </div>
               </div>
               <div>
@@ -454,20 +553,6 @@ function ImgUpload() {
                   </div>
                 )}
               </div>
-              {/* <div className="flex justify-center">
-                <button
-                  className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-10 my-10"
-                  onClick={handleRefresh}
-                >
-                  перезапуск
-                </button>
-                <button
-                  className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-10 my-10"
-                  // onClick={finish}
-                >
-                  скачать
-                </button>
-              </div> */}
             </div>
           )}
         </div>
