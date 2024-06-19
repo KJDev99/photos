@@ -35,6 +35,7 @@ function ImgUpload() {
   const [translateX, setTranslateX] = useState(0);
   const [translateY, setTranslateY] = useState(0);
 
+
   const preventDefaults = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -50,17 +51,16 @@ function ImgUpload() {
     [...files].forEach(uploadFile);
   };
 
-   const uploadFile = (file) => {
-        setImageFile(file); // Set the file for upload
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => {
-            setImage(reader.result);
-        };
+  const uploadFile = (file) => {
+    setImageFile(file); // Set the file for upload
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      setImage(reader.result);
     };
+  };
 
   const handleWheel = (e) => {
-    e.stopPropagation();
     const delta = e.deltaY || e.detail || e.wheelDelta;
     if (delta > 0) {
       setScale(scale * 1.1);
@@ -75,12 +75,19 @@ function ImgUpload() {
     setStartX(e.clientX);
     setStartY(e.clientY);
   };
-
+  
   const handleMouseUp = () => {
     setIsDragging(false);
   };
-
+  const handleMouseLeave = () => {
+    document.body.style.overflowY = 'auto';
+    setIsDragging(false);
+};
+  
   const handleMouseMove = (e) => {
+    document.body.style.overflowY = 'hidden';
+    e.preventDefault(); // Scrollni to'xtatish uchun
+    e.stopPropagation();
     if (isDragging) {
       const dx = (e.clientX - startX) / scale;
       const dy = (e.clientY - startY) / scale;
@@ -388,6 +395,7 @@ function ImgUpload() {
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
           >
             {image ? (
               <img
