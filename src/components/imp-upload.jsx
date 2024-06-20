@@ -25,8 +25,6 @@ function ImgUpload() {
   const [showMessage, setShowMessage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  // const [backStep, setBackStep] = useState(1);
-  const [backDisable, setBackDisable] = useState(false);
 
   const [scale, setScale] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
@@ -34,7 +32,7 @@ function ImgUpload() {
   const [startY, setStartY] = useState(0);
   const [translateX, setTranslateX] = useState(0);
   const [translateY, setTranslateY] = useState(0);
-
+  const [tempColor, setTempColor] = useState(null);
 
   const preventDefaults = (e) => {
     e.preventDefault();
@@ -75,17 +73,18 @@ function ImgUpload() {
     setStartX(e.clientX);
     setStartY(e.clientY);
   };
-  
+
   const handleMouseUp = () => {
     setIsDragging(false);
   };
+
   const handleMouseLeave = () => {
-    document.body.style.overflowY = 'auto';
+    document.body.style.overflowY = "auto";
     setIsDragging(false);
-};
-  
+  };
+
   const handleMouseMove = (e) => {
-    document.body.style.overflowY = 'hidden';
+    document.body.style.overflowY = "hidden";
     e.preventDefault(); // Scrollni to'xtatish uchun
     e.stopPropagation();
     if (isDragging) {
@@ -124,12 +123,10 @@ function ImgUpload() {
 
   const rotateLeft = () => {
     setRotation(rotation - 15);
-    console.log(rotation);
   };
 
   const rotateRight = () => {
     setRotation(rotation + 15);
-    console.log(rotation);
   };
 
   const handleLabelHoverEnter = () => {
@@ -158,10 +155,10 @@ function ImgUpload() {
         });
         console.log("Image uploaded successfully:", response.data);
         setActiveImage(false);
-        getData("/upload/");
+        getData(`/images/${response.data.uuid}`);
       } catch (error) {
         console.error("Error uploading image:", error);
-      }
+      } 
     }
   };
 
@@ -178,18 +175,19 @@ function ImgUpload() {
       .get(url)
       .then((response) => {
         setData(response.data);
+        console.log("Image uploaded successfully222:", response.data[0]);
         setImage(
-          `${response.data.image}?timestamp=${timestamp}?${response.data.id}`
+          `${response.data[0].image}?timestamp=${timestamp}?${response.data[0].uuid}`
         );
-        if (response.data.colors) {
-          const initialColors = response.data.colors.map((color) => ({
+        if (response.data[0].colors) {
+          const initialColors = response.data[0].colors.map((color) => ({
             color: color.hex,
           }));
           setColors(initialColors);
 
-          console.log(response.data, "data");
-          setNumColors(response.data.colors.length);
-          setGetId(response.data.id);
+          console.log(response.data[0], "response.data[0]");
+          setNumColors(response.data[0].colors.length);
+          setGetId(response.data[0].uuid);
           setLoading(true);
         }
       })
@@ -202,11 +200,11 @@ function ImgUpload() {
       api
         .get(`/update-colors/${getId}?limit_colors=${numColors}`)
         .then((response) => {
-          setGetId(response.data.id);
+          setGetId(response.data.uuid);
           setData(response.data);
           console.log(data);
           setImage(
-            `${response.data.image}?timestamp=${timestamp}?${response.data.id}?1`
+            `${response.data.image}?timestamp=${timestamp}?${response.data.uuid}?1`
           );
           setTimestamp(Date.now());
           console.log(response.data.image, "rasm kelishi!!!");
@@ -237,7 +235,6 @@ function ImgUpload() {
       setHover(false);
       setInputActive(false);
       setNumColors(inputValue);
-      setBackDisable(true);
     }
   }, [inputActive, inputValue]);
 
@@ -255,46 +252,41 @@ function ImgUpload() {
     };
   }, [handleButtonClick]);
 
+ 
   const handleChangeColor = (index, newColor) => {
-    const updatedColors = colors.map((color, idx) =>
-      idx === index ? { ...color, color: newColor } : color
-    );
-    setColors(updatedColors);
-    console.log(updatedColors);
+    setTempColor({ index, newColor });
   };
 
-  // const imgBackId = (url) => {
-  //   api
-  //     .get(`http://31.129.99.177:8000/back/process/${getId - backStep}`)
-  //     .then((response) => {
-  //       setData(response.data);
-  //       setImage(
-  //         `${response.data.image}?timestamp=${timestamp}?${response.data.id}`
-  //       );
-  //       if (response.data.colors) {
-  //         const initialColors = response.data.colors.map((color) => ({
-  //           color: color.hex,
-  //         }));
-  //         setColors(initialColors);
-  //         console.log(`${url}/back/progress/${getId}`);
-  //         console.log(response.data, "data");
-  //         setNumColors(response.data.colors.length);
-  //         setGetId(response.data.id);
-  //         setLoading(true);
-  //         setBackStep(backStep + 2);
-  //         console.log(response.data.parent);
-  //         console.log(initialColors);
-  //         initialColors.length == 256
-  //           ? setBackDisable(false)
-  //           : setBackDisable(true);
-  //       }
-  //     })
-  //     .catch((error) => console.error("Error:", error));
-  // };
+  const handleBlur = async () => {
+    if (tempColor !== null) {
+      const { index, newColor } = tempColor;
+      const oldColor = colors[index].color;
 
-  // const handleRefresh = () => {
-  //   window.location.reload();
-  // };
+      if (newColor !== oldColor) {
+        const updatedColors = colors.map((color, idx) =>
+          idx === index ? { ...color, color: newColor } : color
+        );
+        setColors(updatedColors);
+
+        const payload = {
+          color_id: index,
+          new_color_hex: newColor
+        };
+        console.log(payload);
+        try {
+          const response = await api.put(
+            'color/update/000467fe-8da2-4b0d-aa9b-7dc1d2cc3429', // relative path
+            payload
+          );
+          console.log('Updated color:', response.data);
+        } catch (error) {
+          console.error('Error updating color:', error);
+        }
+      }
+
+      setTempColor(null);
+    }
+  };
 
   return (
     <div className="container mx-auto">
@@ -468,10 +460,6 @@ function ImgUpload() {
             <div className="flex flex-col">
               <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
                 <div className="flex max-md:flex-col">
-                  {/* <div className="my-1 capitalize w-max flex">
-                    <span className="mr-3">количество цветов:</span>
-                    <div className="w-[100px] px-1">256</div>
-                  </div> */}
                   <label
                     className="flex cursor-pointer"
                     onClick={handleLabelHoverEnter}
@@ -501,15 +489,6 @@ function ImgUpload() {
                   >
                     <MdKeyboardReturn className="mr-2 text-2xl mt-1" />
                   </button>
-                  {backDisable
-                    ? // <button
-                      //   className=" uppercase mx-4 my-2 inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg max-md:py-2 max-md:px-4 max-md:text-sm"
-                      //   onClick={imgBackId}
-                      // >
-                      //   назад
-                      // </button>
-                      ""
-                    : ""}
                 </div>
               </div>
               <div>
@@ -530,6 +509,7 @@ function ImgUpload() {
                               onChange={(e) =>
                                 handleChangeColor(index, e.target.value)
                               }
+                              onBlur={handleBlur}
                             />
                             <label
                               className="text-xs"
