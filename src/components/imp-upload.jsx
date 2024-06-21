@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { FaArrowRotateLeft, FaArrowRotateRight } from "react-icons/fa6";
 import { MdKeyboardReturn } from "react-icons/md";
 
@@ -12,6 +12,7 @@ function ImgUpload() {
   const [imageFile, setImageFile] = useState(null);
   const [rotation, setRotation] = useState(0);
   const [colors, setColors] = useState([]);
+  const [showSort, setShowSort] = useState(true);
   const [activeImage, setActiveImage] = useState(true);
   // const [imageVisible, setImageVisible] = useState(false);
   const [data, setData] = useState(null);
@@ -22,7 +23,6 @@ function ImgUpload() {
   const [inputValue, setInputValue] = useState("");
   const [inputActive, setInputActive] = useState(false);
   const [timestamp, setTimestamp] = useState(Date.now());
-  const [showMessage, setShowMessage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
@@ -33,6 +33,14 @@ function ImgUpload() {
   const [translateX, setTranslateX] = useState(0);
   const [translateY, setTranslateY] = useState(0);
   const [tempColor, setTempColor] = useState(null);
+
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (width > 0 && height > 0 && containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [width, height]);
 
   const preventDefaults = (e) => {
     e.preventDefault();
@@ -58,15 +66,6 @@ function ImgUpload() {
     };
   };
 
-  const handleWheel = (e) => {
-    const delta = e.deltaY || e.detail || e.wheelDelta;
-    if (delta > 0) {
-      setScale(scale * 1.1);
-    } else {
-      setScale(scale / 1.1);
-    }
-  };
-
   const handleMouseDown = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -84,7 +83,6 @@ function ImgUpload() {
   };
 
   const handleMouseMove = (e) => {
-    document.body.style.overflowY = "hidden";
     e.preventDefault(); // Scrollni to'xtatish uchun
     e.stopPropagation();
     if (isDragging) {
@@ -95,10 +93,6 @@ function ImgUpload() {
       setStartX(e.clientX);
       setStartY(e.clientY);
     }
-  };
-
-  const handleClose = () => {
-    setShowMessage(false);
   };
 
   const handleImageChange = (event) => {
@@ -158,7 +152,7 @@ function ImgUpload() {
         getData(`/images/${response.data.uuid}`);
       } catch (error) {
         console.error("Error uploading image:", error);
-      } 
+      }
     }
   };
 
@@ -218,13 +212,11 @@ function ImgUpload() {
           }
         })
         .catch(() => {
-          setShowMessage(true);
           setNumColors(colors.length);
           setInputValue(colors.length);
         })
         .finally(() => {
           setLoading(false);
-          setTimeout(() => setShowMessage(false), 4000);
         });
     }
   }, [numColors]);
@@ -252,7 +244,6 @@ function ImgUpload() {
     };
   }, [handleButtonClick]);
 
- 
   const handleChangeColor = (index, newColor) => {
     setTempColor({ index, newColor });
   };
@@ -267,20 +258,21 @@ function ImgUpload() {
           idx === index ? { ...color, color: newColor } : color
         );
         setColors(updatedColors);
-
+        console.log(tempColor, 'tempcolor');
+        console.log(updatedColors);
         const payload = {
-          color_id: index,
-          new_color_hex: newColor
+          color_id: index+1,
+          new_color_hex: newColor,
         };
         console.log(payload);
         try {
           const response = await api.put(
-            'color/update/000467fe-8da2-4b0d-aa9b-7dc1d2cc3429', // relative path
+            "color/update/000467fe-8da2-4b0d-aa9b-7dc1d2cc3429", // relative path
             payload
           );
-          console.log('Updated color:', response.data);
+          console.log("Updated color:", response.data);
         } catch (error) {
-          console.error('Error updating color:', error);
+          console.error("Error updating color:", error);
         }
       }
 
@@ -288,16 +280,45 @@ function ImgUpload() {
     }
   };
 
+  const handleSortColors = async () => {
+    try {
+      const response = await fetch(
+        "http://192.168.0.171:9090/grouped/colors/3e9e4be5-dac5-4dff-b7c3-8ccf2a9b3925"
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      const initialColors = data.colors.map((color) => ({
+        color: color.hex,
+      }));
+      setColors(initialColors);
+      setShowSort(false);
+    } catch (error) {
+      console.error("There was a problem with the fetch operation:", error);
+    }
+  };
+  const handleNoSortColors = async () => {
+    try {
+      const response = await fetch(
+        "http://192.168.0.171:9090/return/own-colors/3e9e4be5-dac5-4dff-b7c3-8ccf2a9b3925"
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      const initialColors = data.colors.map((color) => ({
+        color: color.hex,
+      }));
+      setColors(initialColors);
+      setShowSort(true);
+    } catch (error) {
+      console.error("There was a problem with the fetch operation:", error);
+    }
+  };
+
   return (
-    <div className="container mx-auto">
-      {showMessage && (
-        <div
-          onClick={handleClose}
-          className="fixed right-0 top-5 w-[300px] h-16 bg-slate-700 text-white flex items-center justify-center rounded uppercase"
-        >
-          Количество цветов большое
-        </div>
-      )}
+    <div className="container mx-auto pb-16">
       <div className="flex justify-between items-center max-md:flex-col">
         {activeImage && (
           <h2 className="text-3xl my-6 max-md:text-xl max-md:my-3">
@@ -369,7 +390,7 @@ function ImgUpload() {
         </div>
       )}
       {width > 0 && height > 0 ? (
-        <div className="w-full overflow-x-auto ">
+        <div className="w-full overflow-x-auto" ref={containerRef}>
           <div
             className="rectangle mx-auto  !border-dashed"
             style={{
@@ -383,7 +404,6 @@ function ImgUpload() {
             onDragOver={preventDefaults}
             onDragLeave={preventDefaults}
             onDrop={handleDrop}
-            onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
@@ -402,7 +422,7 @@ function ImgUpload() {
                   position: "absolute",
                   top: "0%",
                   left: "0%",
-                  objectFit: "cover",
+                  // objectFit: "cover",
                 }}
               />
             ) : (
@@ -465,7 +485,7 @@ function ImgUpload() {
                     onClick={handleLabelHoverEnter}
                   >
                     <div className="my-1 capitalize  flex">
-                      <span className="mr-3">изменить количество цветов:</span>
+                      <span className="mr-3">количество цветов:</span>
                       {!hover ? (
                         <div className="w-[100px] border rounded px-1">
                           {numColors}
@@ -492,6 +512,31 @@ function ImgUpload() {
                 </div>
               </div>
               <div>
+                {colors.length > 20 && (
+                  <div className="my-4">
+                    {showAll ? (
+                      <div className="div">
+                        {showSort ? (
+                          <p
+                            className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
+                            onClick={handleSortColors}
+                          >
+                            Сортировать
+                          </p>
+                        ) : (
+                          <p
+                            className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
+                            onClick={handleNoSortColors}
+                          >
+                            нет сортировки
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-4 mx-auto justify-center">
                   {colors.length > 0
                     ? colors
