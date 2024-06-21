@@ -103,7 +103,6 @@ function ImgUpload() {
       setFileName(file.name);
       reader.onloadend = () => {
         setImage(reader.result);
-        console.log(image, "rasm2");
       };
       reader.readAsDataURL(file);
     } else {
@@ -258,19 +257,19 @@ function ImgUpload() {
           idx === index ? { ...color, color: newColor } : color
         );
         setColors(updatedColors);
-        console.log(tempColor, 'tempcolor');
+        console.log(tempColor, "tempcolor");
         console.log(updatedColors);
         const payload = {
-          color_id: index+1,
+          color_id: index + 1,
           new_color_hex: newColor,
         };
         console.log(payload);
         try {
           const response = await api.put(
-            "color/update/000467fe-8da2-4b0d-aa9b-7dc1d2cc3429", // relative path
+            `color/update/${getId}`, // relative path
             payload
           );
-          console.log("Updated color:", response.data);
+          console.log("Updated color:", response.data.uuid);
         } catch (error) {
           console.error("Error updating color:", error);
         }
@@ -282,17 +281,15 @@ function ImgUpload() {
 
   const handleSortColors = async () => {
     try {
-      const response = await fetch(
-        "http://192.168.0.171:9090/grouped/colors/3e9e4be5-dac5-4dff-b7c3-8ccf2a9b3925"
+      const response = await api.get(
+        `grouped/colors/${getId}`
       );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
+      const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color: color.hex,
       }));
       setColors(initialColors);
+      console.log(initialColors, 'sort-colors');
       setShowSort(false);
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
@@ -300,17 +297,15 @@ function ImgUpload() {
   };
   const handleNoSortColors = async () => {
     try {
-      const response = await fetch(
-        "http://192.168.0.171:9090/return/own-colors/3e9e4be5-dac5-4dff-b7c3-8ccf2a9b3925"
+      const response = await api.get(
+        `return/own-colors/${getId}`
       );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
+      const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color: color.hex,
       }));
       setColors(initialColors);
+      console.log(initialColors, 'nosort-colors');
       setShowSort(true);
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
