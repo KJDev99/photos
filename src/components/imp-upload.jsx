@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { FaArrowRotateLeft, FaArrowRotateRight } from "react-icons/fa6";
 import { MdKeyboardReturn } from "react-icons/md";
-
+import Cookies from "js-cookie";
 import "../App.css";
 import api from "../api/api";
 
@@ -10,6 +10,7 @@ function ImgUpload() {
   const [height, setHeight] = useState("");
   const [image, setImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [useriIdentifier, setUserIdentifier] = useState("test");
   const [rotation, setRotation] = useState(0);
   const [colors, setColors] = useState([]);
   const [showSort, setShowSort] = useState(true);
@@ -140,17 +141,28 @@ function ImgUpload() {
     if (imageFile) {
       const formData = new FormData();
       formData.append("image", imageFile);
+      formData.append("user_identifier", useriIdentifier);
+      // Cookies.set("user_identifier", JSON.stringify(useriIdentifier));
       try {
         const response = await api.post("/upload/", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
+        console.log("Image uploaded formData:", formData);
         console.log("Image uploaded successfully:", response.data);
         setActiveImage(false);
+        setUserIdentifier(response.data.user_identifier);
+        console.log(
+          "Image uploaded useriIdentifier:",
+          response.data.user_identifier
+        );
+        Cookies.set("user_identifier", response.data.user_identifier);
         getData(`/images/${response.data.uuid}`);
       } catch (error) {
         console.error("Error uploading image:", error);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -164,11 +176,18 @@ function ImgUpload() {
   };
 
   const getData = (url) => {
+    const userIdentifier = Cookies.get("user_identifier");
     api
-      .get(url)
+      .get(url, {
+        headers: {
+          "user-identifier": userIdentifier,
+        },
+      })
       .then((response) => {
         setData(response.data);
         console.log("Image uploaded successfully222:", response.data[0]);
+        setUserIdentifier(response.data[0].user_identifier);
+        Cookies.set("user_identifier", response.data[0].user_identifier);
         setImage(
           `${response.data[0].image}?timestamp=${timestamp}?${response.data[0].uuid}`
         );
@@ -190,8 +209,14 @@ function ImgUpload() {
 
   useEffect(() => {
     if (numColors > 0) {
+      const userIdentifier = Cookies.get("user_identifier");
       api
-        .get(`/update-colors/${getId}?limit_colors=${numColors}`)
+        // .get(`/update-colors/${getId}?limit_colors=${numColors}`)
+        .get(`/update-colors/${getId}?limit_colors=${numColors}`, {
+          headers: {
+            "user-identifier": userIdentifier,
+          },
+        })
         .then((response) => {
           setGetId(response.data.uuid);
           setData(response.data);
@@ -281,15 +306,13 @@ function ImgUpload() {
 
   const handleSortColors = async () => {
     try {
-      const response = await api.get(
-        `grouped/colors/${getId}`
-      );
+      const response = await api.get(`grouped/colors/${getId}`);
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color: color.hex,
       }));
       setColors(initialColors);
-      console.log(initialColors, 'sort-colors');
+      console.log(initialColors, "sort-colors");
       setShowSort(false);
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
@@ -297,15 +320,13 @@ function ImgUpload() {
   };
   const handleNoSortColors = async () => {
     try {
-      const response = await api.get(
-        `return/own-colors/${getId}`
-      );
+      const response = await api.get(`return/own-colors/${getId}`);
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color: color.hex,
       }));
       setColors(initialColors);
-      console.log(initialColors, 'nosort-colors');
+      console.log(initialColors, "nosort-colors");
       setShowSort(true);
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
