@@ -435,8 +435,8 @@ function ImgUpload() {
           <div
             className="rectangle mx-auto  !border-dashed"
             style={{
-              width: `${3 * width}mm`,
-              height: `${3 * height}mm`,
+              width: `${width < 100 ? 3 * width : width}mm`,
+              height: `${height < 100 ? 3 * height : height}mm`,
               border: "1px solid black",
               position: "relative",
               overflow: "hidden",
