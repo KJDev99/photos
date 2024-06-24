@@ -161,8 +161,6 @@ function ImgUpload() {
         getData(`/images/${response.data.uuid}`);
       } catch (error) {
         console.error("Error uploading image:", error);
-      } finally {
-        setLoading(false);
       }
     }
   };
@@ -211,7 +209,6 @@ function ImgUpload() {
     if (numColors > 0) {
       const userIdentifier = Cookies.get("user_identifier");
       api
-        // .get(`/update-colors/${getId}?limit_colors=${numColors}`)
         .get(`/update-colors/${getId}?limit_colors=${numColors}`, {
           headers: {
             "user-identifier": userIdentifier,
@@ -289,10 +286,17 @@ function ImgUpload() {
           new_color_hex: newColor,
         };
         console.log(payload);
+        const userIdentifier = Cookies.get("user_identifier");
         try {
           const response = await api.put(
             `color/update/${getId}`, // relative path
-            payload
+            payload,
+            {
+              headers: {
+                "user-identifier": userIdentifier,
+              },
+              withCredentials: true,
+            }
           );
           console.log("Updated color:", response.data.uuid);
         } catch (error) {
@@ -305,10 +309,20 @@ function ImgUpload() {
   };
 
   const handleSortColors = async () => {
+    const userIdentifier = Cookies.get("user_identifier");
     try {
-      const response = await api.get(`grouped/colors/${getId}`);
+      const response = await api.get(
+        `grouped/colors/${getId}?limit_colors=${numColors}`,
+        {
+          headers: {
+            "user-identifier": userIdentifier,
+          },
+          withCredentials: true,
+        }
+      );
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
+        color_id: color.id,
         color: color.hex,
       }));
       setColors(initialColors);
@@ -318,11 +332,22 @@ function ImgUpload() {
       console.error("There was a problem with the fetch operation:", error);
     }
   };
+
   const handleNoSortColors = async () => {
+    const userIdentifier = Cookies.get("user_identifier");
     try {
-      const response = await api.get(`return/own-colors/${getId}`);
+      const response = await api.get(
+        `return/own-colors/${getId}?limit_colors=${numColors}`,
+        {
+          headers: {
+            "user-identifier": userIdentifier,
+          },
+          withCredentials: true,
+        }
+      );
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
+        color_id: color.id,
         color: color.hex,
       }));
       setColors(initialColors);
