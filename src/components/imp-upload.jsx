@@ -298,7 +298,11 @@ function ImgUpload() {
               withCredentials: true,
             }
           );
-          console.log("Updated color:", response.data.uuid);
+          setImage(`${response.data.image}?timestamp=${timestamp}`);
+          // setImage(
+          //   `${response.data[0].image}?timestamp=${timestamp}?${response.data[0].uuid}`
+          // );
+          console.log("Updated color:", response.data.image);
         } catch (error) {
           console.error("Error updating color:", error);
         }
