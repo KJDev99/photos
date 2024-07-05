@@ -1,16 +1,11 @@
 import { Link } from "react-router-dom";
-// import { GiHamburgerMenu } from "react-icons/gi";
-// import { IoClose } from "react-icons/io5";
-// import { useState } from "react";
-import NavbarTop from "../components/navbar-top";
 
-const Header = () => {
-  // const [menuActive, setMenuActive] = useState(true);
+function Header({ isAuthenticated, onLogout }) {
   return (
-    <header className="text-gray-600 body-font h-[10%]">
+    <header className="text-gray-600 body-font h-[10%] mt-6">
       <div className="container mx-auto flex flex-wrap md:flex-row items-center justify-between h-full">
         <Link
-          to={"/"}
+          to="/"
           className="flex title-font font-medium items-center text-gray-900 md:mb-0"
         >
           <svg
@@ -25,63 +20,26 @@ const Header = () => {
           <span className="ml-3 text-xl">PixelArt</span>
         </Link>
 
-        <NavbarTop />
-
-        {/* <nav
-          className={`max-md:mx-auto flex flex-wrap items-center text-base justify-center max-md:absolute max-md:flex-col max-md:left-1/2 max-md:translate-x-[-50%] max-md:bg-slate-800 max-md:w-4/5 py-5 rounded max-md:text-white max-md:z-50 ${
-            !menuActive ? "max-md:top-20" : "max-md:top-[-150px]"
-          }`}
-        >
-          <Link
-            to={"/"}
-            className="mr-5 max-md:hover:text-slate-500 hover:text-gray-900 uppercase"
-          >
-            главное меню
-          </Link>
-          <Link
-            to={"/katalog"}
-            className="mr-5 max-md:hover:text-slate-500 hover:text-gray-900"
-          >
-            КАТАЛОГ
-          </Link>
-          <Link
-            to={"/about"}
-            className="mr-5 max-md:hover:text-slate-500 hover:text-gray-900"
-          >
-            О MOZABRICK
-          </Link>
-          <Link
-            to={"/contact"}
-            className="mr-5 max-md:hover:text-slate-500 hover:text-gray-900"
-          >
-            КОНТАКТЫ
-          </Link>
-        </nav> */}
-        {/* <button className="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base  md:mt-0">
-          Button
-          <svg
-            fill="none"
-            stroke="currentColor"
-            className="w-4 h-4 ml-1"
-            viewBox="0 0 24 24"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7"></path>
-          </svg>
-        </button> */}
-        {/* {menuActive ? (
-          <GiHamburgerMenu
-            onClick={() => setMenuActive(!menuActive)}
-            className="text-2xl md:hidden"
-          />
+        {/* {isAuthenticated ? (
+          <div className="flex items-center">
+            <span className="text-gray-900 mr-4">Hello</span>
+            <button
+              onClick={onLogout}
+              className="bg-red-500 text-white px-5 py-2 rounded"
+            >
+              Logout
+            </button>
+          </div>
         ) : (
-          <IoClose
-          onClick={() => setMenuActive(!menuActive)}
-            className="text-2xl md:hidden"
-          />
+          <Link to="/login">
+            <button className="bg-indigo-500 text-white px-5 py-2 rounded">
+              Login
+            </button>
+          </Link>
         )} */}
       </div>
     </header>
   );
-};
+}
 
 export default Header;

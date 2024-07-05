@@ -1,5 +1,3 @@
-// import { Link } from "react-router-dom";
-
 const Hero = () => {
   return (
     <div className=" h-[90%]">
@@ -9,14 +7,6 @@ const Hero = () => {
             <h1 className="title-font sm:text-5xl text-2xl mb-4 font-medium text-gray-900">
               Создай свою пиксельную картину, воплоти мечту в реальность
             </h1>
-            <p className="mb-8 leading-relaxed text-black text-2xl">
-              {/* Собирайте любые свои фотографии из кубиков конструктора! */}
-            </p>
-            {/* <Link to={"/img"} className="flex justify-center">
-              <button className="inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg">
-                Купить конструктор
-              </button>
-            </Link> */}
           </div>
           <div className="lg:max-w-lg lg:w-full md:w-1/2 w-5/6 ">
             <img

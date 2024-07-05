@@ -4,13 +4,17 @@ import { MdKeyboardReturn } from "react-icons/md";
 import Cookies from "js-cookie";
 import "../App.css";
 import api from "../api/api";
+import { useNavigate } from "react-router-dom";
 
 function ImgUpload() {
+  const navigate = useNavigate();
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
   const [image, setImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
-  const [useriIdentifier, setUserIdentifier] = useState("test");
+  const [userIdentifier, setUserIdentifier] = useState(
+    Cookies.get("user_identifier") || null
+  );
   const [rotation, setRotation] = useState(0);
   const [colors, setColors] = useState([]);
   const [showSort, setShowSort] = useState(true);
@@ -35,6 +39,8 @@ function ImgUpload() {
   const [translateY, setTranslateY] = useState(0);
   const [tempColor, setTempColor] = useState(null);
 
+  const [schema, setSchema] = useState();
+
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -42,6 +48,30 @@ function ImgUpload() {
       containerRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [width, height]);
+
+  const saveState = (getId) => {
+    const state = {
+      width,
+      height,
+      image,
+      colors,
+      fileName,
+      numColors,
+      getId,
+      translateX,
+      translateY,
+      scale,
+      rotation,
+      activeImage,
+    };
+    sessionStorage.setItem("image_upload_state", JSON.stringify(state));
+  };
+
+  useEffect(() => {
+    window.onbeforeunload = () => {
+      sessionStorage.clear();
+    };
+  }, []);
 
   const preventDefaults = (e) => {
     e.preventDefault();
@@ -111,6 +141,44 @@ function ImgUpload() {
     }
   };
 
+  const handleUpload = async () => {
+    setLoading(true);
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
+      const headers = {
+        "Content-Type": "multipart/form-data",
+      };
+
+      const token = sessionStorage.getItem("succesToken");
+      const userIdentifier = sessionStorage.getItem("user_identifier");
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      } else if (userIdentifier) {
+        headers["user_identifier"] = userIdentifier;
+      }
+
+      try {
+        const response = await api.post("/upload/", formData, { headers });
+
+        console.log("Image uploaded successfully:", response.data);
+
+        setActiveImage(false);
+        setUserIdentifier(response.data.user_identifier);
+
+        Cookies.set("user_identifier", response.data.user_identifier);
+
+        getData(`/images/${response.data.uuid}`);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const handleScaleChange2 = (event) => {
     setScale(event.target.value);
   };
@@ -136,35 +204,6 @@ function ImgUpload() {
     setInputActive(true);
   };
 
-  const handleUpload = async () => {
-    setLoading(true);
-    if (imageFile) {
-      const formData = new FormData();
-      formData.append("image", imageFile);
-      formData.append("user_identifier", useriIdentifier);
-      // Cookies.set("user_identifier", JSON.stringify(useriIdentifier));
-      try {
-        const response = await api.post("/upload/", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        console.log("Image uploaded formData:", formData);
-        console.log("Image uploaded successfully:", response.data);
-        setActiveImage(false);
-        setUserIdentifier(response.data.user_identifier);
-        console.log(
-          "Image uploaded useriIdentifier:",
-          response.data.user_identifier
-        );
-        Cookies.set("user_identifier", response.data.user_identifier);
-        getData(`/images/${response.data.uuid}`);
-      } catch (error) {
-        console.error("Error uploading image:", error);
-      }
-    }
-  };
-
   const handleShowMore = () => {
     setShowAll(true);
   };
@@ -175,45 +214,65 @@ function ImgUpload() {
 
   const getData = (url) => {
     const userIdentifier = Cookies.get("user_identifier");
+    const token = sessionStorage.getItem("succesToken");
+
+    console.log(userIdentifier, "user_identifier");
+    console.log(token, "token");
+
+    const headers = {};
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    } else {
+      headers["user-identifier"] = userIdentifier;
+    }
+    console.log(headers, "headers");
     api
-      .get(url, {
-        headers: {
-          "user-identifier": userIdentifier,
-        },
-      })
+      .get(url, { headers })
       .then((response) => {
-        setData(response.data);
-        console.log("Image uploaded successfully222:", response.data[0]);
-        setUserIdentifier(response.data[0].user_identifier);
-        Cookies.set("user_identifier", response.data[0].user_identifier);
+        setData(response?.data[0]);
+        console.log(response, "successaaa");
+        if (response.data[0].user_identifier) {
+          setUserIdentifier(response.data[0].user_identifier);
+          Cookies.set("user_identifier", response.data[0].user_identifier);
+          Cookies.set("UUID", response.data[0].uuid);
+        }
+
         setImage(
           `${response.data[0].image}?timestamp=${timestamp}?${response.data[0].uuid}`
         );
+
         if (response.data[0].colors) {
           const initialColors = response.data[0].colors.map((color) => ({
             color: color.hex,
           }));
           setColors(initialColors);
-
           console.log(response.data[0], "response.data[0]");
           setNumColors(response.data[0].colors.length);
           setGetId(response.data[0].uuid);
           setLoading(true);
         }
       })
-      .catch((error) => console.error("Error:", error));
-    // .finally(() => setLoading(false));
+      .catch((error) => console.error("Error:", error))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     if (numColors > 0) {
       const userIdentifier = Cookies.get("user_identifier");
+      const token = sessionStorage.getItem("succesToken");
+
+      const headers = {};
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      if (userIdentifier) {
+        headers["user-identifier"] = userIdentifier;
+      }
+
       api
-        .get(`/update-colors/${getId}?limit_colors=${numColors}`, {
-          headers: {
-            "user-identifier": userIdentifier,
-          },
-        })
+        .get(`/update-colors/${getId}?limit_colors=${numColors}`, { headers })
         .then((response) => {
           setGetId(response.data.uuid);
           setData(response.data);
@@ -223,18 +282,23 @@ function ImgUpload() {
           );
           setTimestamp(Date.now());
           console.log(response.data.image, "rasm kelishi!!!");
+
           if (response.data.colors) {
             const initialColors = response.data.colors.map((color) => ({
               color: color.hex,
             }));
             setColors(initialColors);
             console.log(response.data, "data");
-            console.log("Initial colors:", initialColors);
+            sessionStorage.setItem(
+              "user_identifier",
+              response.data.user_identifier
+            );
+            saveState(response.data.uuid); // `saveState` ni qanday chaqirish kerakligi o'rniga o'zingiz o'ylashingiz kerak
           }
         })
         .catch(() => {
-          setNumColors(colors.length);
-          setInputValue(colors.length);
+          setNumColors(colors.length); // Agar catch bo'lsa, `colors` uchun qiymatni o'zgartirish kerak bo'ladi
+          setInputValue(colors.length); // `setInputValue` ni qanday chaqirish kerakligi o'rniga o'zingiz o'ylashingiz kerak
         })
         .finally(() => {
           setLoading(false);
@@ -248,6 +312,8 @@ function ImgUpload() {
       setHover(false);
       setInputActive(false);
       setNumColors(inputValue);
+
+      // saveState();
     }
   }, [inputActive, inputValue]);
 
@@ -255,6 +321,7 @@ function ImgUpload() {
     const handleKeyDown = (event) => {
       if (event.key === "Enter") {
         handleButtonClick();
+        // saveState();
       }
     };
 
@@ -279,29 +346,25 @@ function ImgUpload() {
           idx === index ? { ...color, color: newColor } : color
         );
         setColors(updatedColors);
-        console.log(tempColor, "tempcolor");
-        console.log(updatedColors);
+
         const payload = {
           color_id: index + 1,
           new_color_hex: newColor,
         };
-        console.log(payload);
+
         const userIdentifier = Cookies.get("user_identifier");
+        const token = sessionStorage.getItem("succesToken");
+
+        const headers = {
+          "user-identifier": userIdentifier,
+          Authorization: `Bearer ${token}`,
+        };
+
         try {
-          const response = await api.put(
-            `color/update/${getId}`, // relative path
-            payload,
-            {
-              headers: {
-                "user-identifier": userIdentifier,
-              },
-              withCredentials: true,
-            }
-          );
+          const response = await api.put(`color/update/${getId}`, payload, {
+            headers,
+          });
           setImage(`${response.data.image}?timestamp=${timestamp}`);
-          // setImage(
-          //   `${response.data[0].image}?timestamp=${timestamp}?${response.data[0].uuid}`
-          // );
           console.log("Updated color:", response.data.image);
         } catch (error) {
           console.error("Error updating color:", error);
@@ -314,24 +377,31 @@ function ImgUpload() {
 
   const handleSortColors = async () => {
     const userIdentifier = Cookies.get("user_identifier");
+    const token = sessionStorage.getItem("succesToken");
+
+    const headers = {
+      "user-identifier": userIdentifier,
+      Authorization: `Bearer ${token}`,
+    };
+
     try {
       const response = await api.get(
         `grouped/colors/${getId}?limit_colors=${numColors}`,
         {
-          headers: {
-            "user-identifier": userIdentifier,
-          },
-          withCredentials: true,
+          headers,
+          withCredentials: true, // Agar kerak bo'lsa
         }
       );
+
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color_id: color.id,
         color: color.hex,
       }));
+
       setColors(initialColors);
       console.log(initialColors, "sort-colors");
-      setShowSort(false);
+      setShowSort(false); // Sort tugmasini yopish
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
     }
@@ -339,26 +409,78 @@ function ImgUpload() {
 
   const handleNoSortColors = async () => {
     const userIdentifier = Cookies.get("user_identifier");
+    const token = sessionStorage.getItem("succesToken");
+
+    const headers = {
+      "user-identifier": userIdentifier,
+      Authorization: `Bearer ${token}`,
+    };
+
     try {
       const response = await api.get(
         `return/own-colors/${getId}?limit_colors=${numColors}`,
         {
-          headers: {
-            "user-identifier": userIdentifier,
-          },
-          withCredentials: true,
+          headers,
+          withCredentials: true, // Agar kerak bo'lsa
         }
       );
+
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color_id: color.id,
         color: color.hex,
       }));
+
       setColors(initialColors);
       console.log(initialColors, "nosort-colors");
-      setShowSort(true);
+      setShowSort(true); // Sort tugmasini ko'rsatish
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Login holatini tekshirish va saqlash
+    const savedState = sessionStorage.getItem("image_upload_state");
+    if (savedState) {
+      const parsedState = JSON.parse(savedState);
+      setWidth(parsedState.width);
+      setHeight(parsedState.height);
+      setImage(parsedState.image);
+      setColors(parsedState.colors);
+      setFileName(parsedState.fileName);
+      setNumColors(parsedState.numColors);
+      setGetId(parsedState.getId);
+      setTranslateX(parsedState.translateX);
+      setTranslateY(parsedState.translateY);
+      setScale(parsedState.scale);
+      setRotation(parsedState.rotation);
+      setActiveImage(parsedState.activeImage);
+    }
+  }, []);
+
+  const schemaCreate = async () => {
+    const userIdentifier = Cookies.get("user_identifier");
+    const token = sessionStorage.getItem("succesToken");
+
+    const headers = {
+      "user-identifier": userIdentifier,
+      Authorization: `Bearer ${token}`,
+    };
+
+    try {
+      setLoading(true);
+      const response = await api.get(`schema/${getId}`, {
+        headers,
+      });
+      const data = response.data;
+      setSchema(data.schema);
+      console.log(schema, "data-schema");
+      console.log(response.data, "data-schema");
+    } catch (error) {
+      navigate("/login");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -370,23 +492,6 @@ function ImgUpload() {
             Загрузить изображение:
           </h2>
         )}
-
-        {/* {!activeImage && (
-          <div className="flex justify-center">
-            <button
-              className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-4 my-10 max-md:my-4 max-md:py-2 max-md:px-4 max-md:text-sm"
-              onClick={handleRefresh}
-            >
-              перезапуск
-            </button>
-            <button
-              className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg mx-4 my-10 max-md:my-4 max-md:py-2 max-md:px-4 max-md:text-sm"
-              // onClick={finish}
-            >
-              скачать
-            </button>
-          </div>
-        )} */}
       </div>
       <div className="flex md:mx-36 max-md:flex-col">
         <label className="flex md:w-1/2 max-md:w-full mb-5">
@@ -630,6 +735,36 @@ function ImgUpload() {
                     )}
                   </div>
                 )}
+              </div>
+              <button
+                onClick={schemaCreate}
+                className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
+              >
+                схема
+              </button>
+              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
+                {schema
+                  ? schema.map((group, groupIndex) => (
+                      <div key={groupIndex} className="mb-8 space-x-4">
+                        <h2 className="text-lg font-bold"></h2>
+                        <div className="">
+                          {group.groups.map((item) => (
+                            <div key={item.id} className="flex">
+                              {item.colors.map((color, colorIndex) => (
+                                <div
+                                  key={colorIndex}
+                                  className="w-6 h-6 flex items-center justify-center text-xs !text-[red] border border-dashed border-black"
+                                  style={{ backgroundColor: color.hex_code }}
+                                >
+                                  {color.color_name}
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  : ""}
               </div>
             </div>
           )}

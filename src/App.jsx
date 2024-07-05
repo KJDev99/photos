@@ -1,19 +1,37 @@
-import { Route, Routes } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
-import KatalogPage from "./pages/katalog-page";
-import AboutPage from "./pages/about-page";
-import ContactPage from "./pages/contact-page";
-import ImgPage from "./pages/img-page";
+import Login from "./components/logIn";
+import SignUp from "./components/Signup";
+import Header from "./components/header";
+import { useState } from "react";
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+
+  const handleLogin = (username) => {
+    setIsAuthenticated(true);
+    setUsername(username);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUsername("");
+    localStorage.removeItem("username");
+  };
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/katalog" element={<KatalogPage />} />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/contact" element={<ContactPage />} />
-      <Route path="/img" element={<ImgPage />} />
-    </Routes>
+    <div>
+      <Header
+        isAuthenticated={isAuthenticated}
+        username={username}
+        onLogout={handleLogout}
+      />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/signup" element={<SignUp onSignUp={handleLogin} />} />
+      </Routes>
+    </div>
   );
 };
 
