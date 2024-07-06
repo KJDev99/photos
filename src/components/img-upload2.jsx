@@ -6,7 +6,7 @@ import "../App.css";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
 
-function ImgUpload() {
+function ImgUploa2() {
   const navigate = useNavigate();
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
@@ -631,8 +631,8 @@ function ImgUpload() {
           <div
             className="rectangle mx-auto  !border-dashed"
             style={{
-              width: `${width < 100 ? 3 * width : width}mm`,
-              height: `${height < 100 ? 3 * height : height}mm`,
+              width: `${ width}mm`,
+              height: `${height}mm`,
               border: "1px solid black",
               position: "relative",
               overflow: "hidden",
@@ -861,4 +861,4 @@ function ImgUpload() {
   );
 }
 
-export default ImgUpload;
+export default ImgUploa2;
