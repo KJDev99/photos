@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
+import { IoPersonCircleOutline } from "react-icons/io5";
 
-function Header({ isAuthenticated, onLogout }) {
+function Header({ isAuthenticated }) {
   return (
     <header className="text-gray-600 body-font h-[10%] mt-6">
       <div className="container mx-auto flex flex-wrap md:flex-row items-center justify-between h-full">
@@ -20,23 +21,13 @@ function Header({ isAuthenticated, onLogout }) {
           <span className="ml-3 text-xl">PixelArt</span>
         </Link>
 
-        {/* {isAuthenticated ? (
+        {isAuthenticated ? (
           <div className="flex items-center">
-            <span className="text-gray-900 mr-4">Hello</span>
-            <button
-              onClick={onLogout}
-              className="bg-red-500 text-white px-5 py-2 rounded"
-            >
-              Logout
-            </button>
+            <IoPersonCircleOutline className="text-4xl" />
           </div>
         ) : (
-          <Link to="/login">
-            <button className="bg-indigo-500 text-white px-5 py-2 rounded">
-              Login
-            </button>
-          </Link>
-        )} */}
+          ""
+        )}
       </div>
     </header>
   );

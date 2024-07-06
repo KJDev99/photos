@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import api from "../api/api";
 
 function SignUp({ onSignUp }) {
   const [username, setUsername] = useState("");
@@ -22,7 +23,7 @@ function SignUp({ onSignUp }) {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-
+  
     const signUpData = {
       username,
       password,
@@ -31,29 +32,23 @@ function SignUp({ onSignUp }) {
       first_name: firstName,
       last_name: lastName,
     };
-
+  
     if (uuid) {
       signUpData.uuid = uuid;
     }
-
+  
     try {
-      const response = await fetch("http://192.168.0.164:8000/auth/register/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(signUpData),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
+      const response = await api.post('/auth/register/', signUpData);
+  
+      if (response.status === 200) {
+        const data = response.data;
         // Sign up muvaffaqiyatli bo'lsa, kerakli harakatlarni bajaring
         navigate("/login");
         onSignUp(username);
         console.log("Sign up successful:", data);
       } else {
         // Sign up muvaffaqiyatsiz bo'lsa, xatoni ko'rsating
-        const errorData = await response.json();
+        const errorData = response.data;
         setError(errorData.message || "Sign up failed");
       }
     } catch (error) {

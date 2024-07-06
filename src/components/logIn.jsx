@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import api from "../api/api";
 
 function Login({ onLogin }) {
   const [phone, setPhone] = useState("");
@@ -18,50 +19,37 @@ function Login({ onLogin }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     try {
-      const uuid = JSON.parse(
-        sessionStorage.getItem("image_upload_state")
-      ).getId;
-
+      const uuid = JSON.parse(sessionStorage.getItem("image_upload_state")).getId;
+  
       const requestBody = {
         phone,
         password,
       };
-
+  
       if (uuid) {
         requestBody.uuid = uuid;
       }
-
+  
       console.log(requestBody);
-
       console.log(requestBody, "requestBody");
-      console.log(
-        JSON.parse(sessionStorage.getItem("image_upload_state")).getId,
-        "getid"
-      );
-
-      const response = await fetch("http://192.168.0.164:8000/auth/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
+      console.log(uuid, "getid");
+  
+      const response = await api.post('/auth/login/', requestBody);
+  
+      if (response.status === 200) {
+        const data = response.data;
         navigate("/");
         console.log("Login successful:", data);
         sessionStorage.setItem("succesToken", data.access);
         onLogin(data.access);
       } else {
-        console.log(uuid);
-        const errorData = await response.json();
+        const errorData = response.data;
         setError(errorData.message || "Login failed");
       }
     } catch (error) {
-      setError("Network erroraa");
+      setError("Network error");
     }
   };
 
