@@ -23,7 +23,7 @@ function SignUp({ onSignUp }) {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-  
+
     const signUpData = {
       username,
       password,
@@ -32,34 +32,42 @@ function SignUp({ onSignUp }) {
       first_name: firstName,
       last_name: lastName,
     };
-  
+
     if (uuid) {
       signUpData.uuid = uuid;
     }
-  
+
     try {
-      const response = await api.post('/auth/register/', signUpData);
-  
-      if (response.status === 200) {
-        const data = response.data;
+      const response = await fetch("http://31.129.99.177:8000/auth/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(signUpData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
         // Sign up muvaffaqiyatli bo'lsa, kerakli harakatlarni bajaring
         navigate("/login");
         onSignUp(username);
         console.log("Sign up successful:", data);
       } else {
         // Sign up muvaffaqiyatsiz bo'lsa, xatoni ko'rsating
-        const errorData = response.data;
-        setError(errorData.message || "Sign up failed");
+        const errorData = await response.json();
+        setError(errorData.message || "Регистрация прошла неудачно");
       }
     } catch (error) {
-      setError("Network error");
+      setError("Ошибка сети");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Страница регистрации</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          Страница регистрации
+        </h1>
         <form onSubmit={handleSignUp} className="space-y-4">
           <div>
             <label

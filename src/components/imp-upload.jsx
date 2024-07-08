@@ -328,9 +328,10 @@ function ImgUpload() {
           if (response.data.colors) {
             const initialColors = response.data.colors.map((color) => ({
               color: color.hex,
+              count: color.count,
             }));
             setColors(initialColors);
-            console.log(response.data, "data");
+            console.log(initialColors, "data");
             sessionStorage.setItem(
               "user_identifier",
               response.data.user_identifier
@@ -423,18 +424,18 @@ function ImgUpload() {
   const handleSortColors = async () => {
     const userIdentifier = Cookies.get("user_identifier");
     const token = sessionStorage.getItem("succesToken");
-
+  
     console.log(userIdentifier, "user_identifier");
     console.log(token, "token");
-
+  
     const headers = {};
-
+  
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     } else {
       headers["user-identifier"] = userIdentifier;
     }
-
+  
     try {
       const response = await api.get(
         `grouped/colors/${getId}?limit_colors=${numColors}`,
@@ -443,13 +444,14 @@ function ImgUpload() {
           withCredentials: true, // Agar kerak bo'lsa
         }
       );
-
+  
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color_id: color.id,
         color: color.hex,
+        count: color.count,
       }));
-
+  
       setColors(initialColors);
       console.log(initialColors, "sort-colors");
       setShowSort(false); // Sort tugmasini yopish
@@ -461,18 +463,18 @@ function ImgUpload() {
   const handleNoSortColors = async () => {
     const userIdentifier = Cookies.get("user_identifier");
     const token = sessionStorage.getItem("succesToken");
-
+  
     console.log(userIdentifier, "user_identifier");
     console.log(token, "token");
-
+  
     const headers = {};
-
+  
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     } else {
       headers["user-identifier"] = userIdentifier;
     }
-
+  
     try {
       const response = await api.get(
         `return/own-colors/${getId}?limit_colors=${numColors}`,
@@ -481,13 +483,14 @@ function ImgUpload() {
           withCredentials: true, // Agar kerak bo'lsa
         }
       );
-
+  
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color_id: color.id,
         color: color.hex,
+        count: color.count,
       }));
-
+  
       setColors(initialColors);
       console.log(initialColors, "nosort-colors");
       setShowSort(true); // Sort tugmasini ko'rsatish
@@ -495,7 +498,7 @@ function ImgUpload() {
       console.error("There was a problem with the fetch operation:", error);
     }
   };
-
+  
   useEffect(() => {
     // Login holatini tekshirish va saqlash
     const savedState = sessionStorage.getItem("image_upload_state");
@@ -597,8 +600,6 @@ function ImgUpload() {
                     type="number"
                     value={inputSizeValue}
                     onChange={handleSizeChange}
-                    // onFocus={() => setHover2(true)}
-                    // onBlur={() => setHover2(false)}
                   />
                 </>
               )}
@@ -787,7 +788,7 @@ function ImgUpload() {
                         .map((item, index) => (
                           <div
                             key={index}
-                            className="rounded h-10 w-10 flex flex-col"
+                            className="rounded h-14 w-10 flex flex-col"
                           >
                             <input
                               className="rounded color-picker"
@@ -799,12 +800,15 @@ function ImgUpload() {
                               }
                               onBlur={handleBlur}
                             />
-                            <label
-                              className="text-xs"
-                              htmlFor={`colorPicker${index}`}
-                            >
-                              {item.color}
-                            </label>
+                            <div className="flex flex-col items-center">
+                              <label
+                                className="text-xs"
+                                htmlFor={`colorPicker${index}`}
+                              >
+                                {item.color}
+                              </label>
+                              <div className="text-xs">{item.count}</div>
+                            </div>
                           </div>
                         ))
                     : "rang yoq"}

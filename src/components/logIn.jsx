@@ -46,10 +46,10 @@ function Login({ onLogin }) {
         onLogin(data.access);
       } else {
         const errorData = response.data;
-        setError(errorData.message || "Login failed");
+        setError(errorData.message || "Ошибка входа");
       }
     } catch (error) {
-      setError("Network error");
+      setError("Ошибка сети");
     }
   };
 
