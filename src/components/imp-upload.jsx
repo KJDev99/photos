@@ -212,42 +212,38 @@ function ImgUpload() {
 
   const handleSizeChange = (event) => {
     setInputSizeValue(event.target.value);
+    setSizePixel(event.target.value);
   };
 
-  const handleKeyDown = async (event) => {
-    if (event.key === "Enter") {
-      const newSize = inputSizeValue;
-      setSizePixel(newSize);
-      const userIdentifier = Cookies.get("user_identifier");
-      const token = sessionStorage.getItem("succesToken");
+  const handleButtonClick2 = async () => {
+    const newSize = inputSizeValue;
+    setSizePixel(newSize);
+    const userIdentifier = Cookies.get("user_identifier");
+    const token = sessionStorage.getItem("succesToken");
 
-      const headers = {};
-      const payload = {
-        block_size: newSize,
-      };
+    const headers = {};
+    const payload = {
+      block_size: newSize,
+    };
 
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      } else {
-        headers["user-identifier"] = userIdentifier;
-      }
-
-      try {
-        const response = await api.put(
-          `/image/pixel/update/${getId}`,
-          payload,
-          {
-            headers,
-          }
-        );
-        const timestamp = new Date().getTime();
-        setImage(`${response.data.image}?timestamp=${timestamp}`);
-        // saveState();
-        console.log(getId);
-      } catch (error) {
-        console.error("Error updating pixel size:", error);
-      }
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    } else {
+      headers["user-identifier"] = userIdentifier;
     }
+
+    try {
+      const response = await api.put(`/image/pixel/update/${getId}`, payload, {
+        headers,
+      });
+      const timestamp = new Date().getTime();
+      setImage(`${response.data.image}?timestamp=${timestamp}`);
+      console.log(getId);
+    } catch (error) {
+      console.error("Error updating pixel size:", error);
+    }
+
+    // setHover2(false);
   };
 
   const handleShowMore = () => {
@@ -584,6 +580,7 @@ function ImgUpload() {
           <label className="flex cursor-pointer  md:w-1/3 max-md:w-full mb-5">
             <div
               className="my-1 capitalize  flex"
+              // onClick={() => setHover2((prev) => !prev)}
               onMouseEnter={() => setHover2(true)}
               onMouseLeave={() => setHover2(false)}
             >
@@ -593,15 +590,24 @@ function ImgUpload() {
                   {sizePixel}
                 </div>
               ) : (
-                <input
-                  className="!w-[100px] border rounded px-2 py-1 mx-3 max-md:w-[150px]"
-                  placeholder="число"
-                  type="number"
-                  value={inputSizeValue}
-                  onChange={handleSizeChange}
-                  onKeyDown={handleKeyDown}
-                />
+                <>
+                  <input
+                    className="!w-[100px] border rounded px-2 py-1 mx-3 max-md:w-[150px]"
+                    placeholder="число"
+                    type="number"
+                    value={inputSizeValue}
+                    onChange={handleSizeChange}
+                    // onFocus={() => setHover2(true)}
+                    // onBlur={() => setHover2(false)}
+                  />
+                </>
               )}
+              <button
+                className=" uppercase mx-4 inline-flex items-center justify-center text-white bg-indigo-500 border-0 px-10 focus:outline-none hover:bg-indigo-600 rounded text-lg  max-md:px-4 max-md:text-sm"
+                onClick={handleButtonClick2}
+              >
+                <MdKeyboardReturn className="mr-2 text-2xl mt-1" />
+              </button>
             </div>
           </label>
         )}
@@ -631,8 +637,8 @@ function ImgUpload() {
           <div
             className="rectangle mx-auto  !border-dashed"
             style={{
-              width: `${width < 100 ? 3 * width : width}mm`,
-              height: `${height < 100 ? 3 * height : height}mm`,
+              width: `${width}mm`,
+              height: `${height}mm`,
               border: "1px solid black",
               position: "relative",
               overflow: "hidden",
