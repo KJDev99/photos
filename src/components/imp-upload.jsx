@@ -154,16 +154,16 @@ function ImgUpload() {
   };
 
   useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchmove', handleTouchMove);
-    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isDragging, startX, startY, translateX, translateY]);
 
@@ -223,6 +223,7 @@ function ImgUpload() {
   };
 
   const handleScaleChange2 = (event) => {
+    console.log("Scale", scale);
     setScale(event.target.value);
   };
 
@@ -275,7 +276,21 @@ function ImgUpload() {
       });
       const timestamp = new Date().getTime();
       setImage(`${response.data.image}?timestamp=${timestamp}`);
-      console.log(getId);
+      if (response.data.colors) {
+        const initialColors = response.data.colors.map((color) => ({
+          color: color.hex,
+          count: color.count,
+        }));
+        setColors(initialColors);
+        console.log(initialColors, "data");
+        sessionStorage.setItem(
+          "user_identifier",
+          response.data.user_identifier
+        );
+        saveState(response.data.uuid);
+        // `saveState` ni qanday chaqirish kerakligi o'rniga o'zingiz o'ylashingiz kerak
+      }
+      console.log(response.data.colors);
     } catch (error) {
       console.error("Error updating pixel size:", error);
     }
@@ -313,7 +328,7 @@ function ImgUpload() {
         console.log(response, "successaaa");
         if (response.data[0].user_identifier) {
           setUserIdentifier(response.data[0].user_identifier);
-          Cookies.set("user_identifier", response.data[0].user_identifier);
+          Cookies.set("user_identifier", userIdentifier);
           Cookies.set("UUID", response.data[0].uuid);
         }
 
@@ -461,18 +476,18 @@ function ImgUpload() {
   const handleSortColors = async () => {
     const userIdentifier = Cookies.get("user_identifier");
     const token = sessionStorage.getItem("succesToken");
-  
+
     console.log(userIdentifier, "user_identifier");
     console.log(token, "token");
-  
+
     const headers = {};
-  
+
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     } else {
       headers["user-identifier"] = userIdentifier;
     }
-  
+
     try {
       const response = await api.get(
         `grouped/colors/${getId}?limit_colors=${numColors}`,
@@ -481,14 +496,14 @@ function ImgUpload() {
           withCredentials: true, // Agar kerak bo'lsa
         }
       );
-  
+
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color_id: color.id,
         color: color.hex,
         count: color.count,
       }));
-  
+
       setColors(initialColors);
       console.log(initialColors, "sort-colors");
       setShowSort(false); // Sort tugmasini yopish
@@ -500,18 +515,18 @@ function ImgUpload() {
   const handleNoSortColors = async () => {
     const userIdentifier = Cookies.get("user_identifier");
     const token = sessionStorage.getItem("succesToken");
-  
+
     console.log(userIdentifier, "user_identifier");
     console.log(token, "token");
-  
+
     const headers = {};
-  
+
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     } else {
       headers["user-identifier"] = userIdentifier;
     }
-  
+
     try {
       const response = await api.get(
         `return/own-colors/${getId}?limit_colors=${numColors}`,
@@ -520,14 +535,14 @@ function ImgUpload() {
           withCredentials: true, // Agar kerak bo'lsa
         }
       );
-  
+
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color_id: color.id,
         color: color.hex,
         count: color.count,
       }));
-  
+
       setColors(initialColors);
       console.log(initialColors, "nosort-colors");
       setShowSort(true); // Sort tugmasini ko'rsatish
@@ -535,7 +550,7 @@ function ImgUpload() {
       console.error("There was a problem with the fetch operation:", error);
     }
   };
-  
+
   useEffect(() => {
     // Login holatini tekshirish va saqlash
     const savedState = sessionStorage.getItem("image_upload_state");
@@ -696,16 +711,15 @@ function ImgUpload() {
                 src={`${image}`}
                 alt="Uploaded"
                 style={{
-                  width: `${scale * 100}%`,
-                  height: `${scale * 100}%`,
+                  width: `${Math.floor(width * 3.7795275591)}px`,
+                  height: `${Math.floor(height * 3.7795275591)}px`,
                   transform: `scale(${scale}) translate(${translateX}px, ${translateY}px) rotate(${rotation}deg)`,
                   cursor: isDragging ? "grabbing" : "zoom-out",
-                  touchAction: 'none', // touch actionni to'xtatish uchun
-                  // transformOrigin: "center center",
+                  touchAction: "none", // touch actionni to'xtatish uchun
                   position: "absolute",
                   top: "0%",
                   left: "0%",
-                  objectFit: "contain",
+                  objectFit: "fill",
                 }}
               />
             ) : (
@@ -846,7 +860,9 @@ function ImgUpload() {
                               >
                                 {item.color}
                               </label>
-                              <div className="text-xs">{item.count}&nbsp;PX</div>
+                              <div className="text-xs">
+                                {item.count}&nbsp;PX
+                              </div>
                             </div>
                           </div>
                         ))

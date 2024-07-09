@@ -21,6 +21,47 @@ function SignUp({ onSignUp }) {
     }
   }, []);
 
+  // const handleSignUp = async (e) => {
+  //   e.preventDefault();
+
+  //   const signUpData = {
+  //     username,
+  //     password,
+  //     email,
+  //     phone,
+  //     first_name: firstName,
+  //     last_name: lastName,
+  //   };
+
+  //   if (uuid) {
+  //     signUpData.uuid = uuid;
+  //   }
+
+  //   try {
+  //     const response = await fetch("http://31.129.99.177:8000/auth/register/", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(signUpData),
+  //     });
+
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       // Sign up muvaffaqiyatli bo'lsa, kerakli harakatlarni bajaring
+  //       navigate("/login");
+  //       onSignUp(username);
+  //       console.log("Sign up successful:", data);
+  //     } else {
+  //       // Sign up muvaffaqiyatsiz bo'lsa, xatoni ko'rsating
+  //       const errorData = await response.json();
+  //       setError(errorData.message || "Регистрация прошла неудачно");
+  //     }
+  //   } catch (error) {
+  //     setError("Ошибка сети");
+  //   }
+  // };
+
   const handleSignUp = async (e) => {
     e.preventDefault();
 
@@ -38,27 +79,33 @@ function SignUp({ onSignUp }) {
     }
 
     try {
-      const response = await fetch("http://31.129.99.177:8000/auth/register/", {
-        method: "POST",
+      const response = await api.post("/auth/register/", signUpData, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(signUpData),
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200) {
+        const data = response.data;
         // Sign up muvaffaqiyatli bo'lsa, kerakli harakatlarni bajaring
         navigate("/login");
         onSignUp(username);
         console.log("Sign up successful:", data);
       } else {
-        // Sign up muvaffaqiyatsiz bo'lsa, xatoni ko'rsating
-        const errorData = await response.json();
+        // Sign up muvaffaqiyatsiz bo'lsa, login sahifasiga o'ting va xatoni ko'rsating
+        navigate("/login");
+        const errorData = response.data;
         setError(errorData.message || "Регистрация прошла неудачно");
       }
     } catch (error) {
-      setError("Ошибка сети");
+      // Network yoki boshqa xato bo'lsa ham login sahifasiga o'ting va xatoni ko'rsating
+      navigate("/login");
+      if (error.response) {
+        const errorData = error.response.data;
+        setError(errorData.message || "Регистрация прошла неудачно");
+      } else {
+        setError("Ошибка сети");
+      }
     }
   };
 
