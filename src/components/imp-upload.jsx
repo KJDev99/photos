@@ -127,8 +127,45 @@ function ImgUpload() {
       setTranslateY(translateY + dy);
       setStartX(e.clientX);
       setStartY(e.clientY);
+      // console.log('test')
     }
   };
+  const handleTouchStart = (e) => {
+    setIsDragging(true);
+    setStartX(e.touches[0].clientX);
+    setStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e) => {
+    e.preventDefault(); // Scrollni to'xtatish uchun
+    e.stopPropagation();
+    if (isDragging) {
+      const dx = (e.touches[0].clientX - startX) / scale;
+      const dy = (e.touches[0].clientY - startY) / scale;
+      setTranslateX((prevTranslateX) => prevTranslateX + dx);
+      setTranslateY((prevTranslateY) => prevTranslateY + dy);
+      setStartX(e.touches[0].clientX);
+      setStartY(e.touches[0].clientY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, startX, startY, translateX, translateY]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -652,6 +689,7 @@ function ImgUpload() {
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
           >
             {image ? (
               <img
@@ -662,11 +700,12 @@ function ImgUpload() {
                   height: `${scale * 100}%`,
                   transform: `scale(${scale}) translate(${translateX}px, ${translateY}px) rotate(${rotation}deg)`,
                   cursor: isDragging ? "grabbing" : "zoom-out",
+                  touchAction: 'none', // touch actionni to'xtatish uchun
                   // transformOrigin: "center center",
                   position: "absolute",
                   top: "0%",
                   left: "0%",
-                  // objectFit: "cover",
+                  objectFit: "contain",
                 }}
               />
             ) : (
@@ -807,7 +846,7 @@ function ImgUpload() {
                               >
                                 {item.color}
                               </label>
-                              <div className="text-xs">{item.count}</div>
+                              <div className="text-xs">{item.count}&nbsp;PX</div>
                             </div>
                           </div>
                         ))
