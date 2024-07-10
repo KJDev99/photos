@@ -171,16 +171,26 @@ function ImgUpload() {
   };
 
   useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    window.addEventListener("touchmove", handleTouchMove);
-    window.addEventListener("touchend", handleTouchEnd);
+    const currentRef = containerRef.current;
+
+    // Begin event listeners attachment only to the div
+    if (currentRef) {
+      currentRef.addEventListener("mousemove", handleMouseMove);
+      currentRef.addEventListener("mouseup", handleMouseUp);
+      currentRef.addEventListener("mouseleave", handleMouseLeave);
+      currentRef.addEventListener("touchmove", handleTouchMove);
+      currentRef.addEventListener("touchend", handleTouchEnd);
+    }
+    // End event listeners attachment only to the div
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
+      if (currentRef) {
+        currentRef.removeEventListener("mousemove", handleMouseMove);
+        currentRef.removeEventListener("mouseup", handleMouseUp);
+        currentRef.removeEventListener("mouseleave", handleMouseLeave);
+        currentRef.removeEventListener("touchmove", handleTouchMove);
+        currentRef.removeEventListener("touchend", handleTouchEnd);
+      }
     };
   }, [
     isDragging,
