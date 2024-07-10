@@ -280,6 +280,9 @@ function ImgUpload() {
           count: color.count,
         }));
         setColors(initialColors);
+        setNumColors(initialColors.length);
+        setInputValue(initialColors.length);
+        console.log(initialColors.length)
         console.log(response.data, "dataeditsize");
         sessionStorage.setItem(
           "user_identifier",
@@ -634,7 +637,6 @@ function ImgUpload() {
           <label className="flex cursor-pointer  md:w-1/3 max-md:w-full mb-5">
             <div
               className="my-1 capitalize  flex"
-              // onClick={() => setHover2((prev) => !prev)}
               onMouseEnter={() => setHover2(true)}
               onMouseLeave={() => setHover2(false)}
             >
