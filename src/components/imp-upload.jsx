@@ -443,7 +443,7 @@ function ImgUpload() {
 
       if (newColor !== oldColor) {
         const updatedColors = colors.map((color, idx) =>
-          idx === index ? { ...color, color: newColor } : color
+          idx === index ? { ...color, hex: newColor } : color
         );
         setColors(updatedColors);
 
@@ -466,8 +466,16 @@ function ImgUpload() {
           const response = await api.put(`color/update/${getId}`, payload, {
             headers,
           });
-          setImage(`${response.data.image}?timestamp=${timestamp}`);
-          console.log("Updated color:", response.data.image);
+          console.log(updatedColors, 'asd')
+          const newImage = `${response.data.image}?timestamp=${timestamp}`;
+          setImage(newImage);
+          console.log("Updated color:", response.data);
+          saveState(
+            response.data.uuid,
+            newImage,
+            response.data.colors,
+            numColors
+          );
         } catch (error) {
           console.error("Error updating color:", error);
         }
@@ -861,7 +869,7 @@ function ImgUpload() {
                                 className="text-xs"
                                 htmlFor={`colorPicker${index}`}
                               >
-                                {item.color}
+                                {item.hex}
                               </label>
                               <div className="text-xs">
                                 {item.count}&nbsp;PX
