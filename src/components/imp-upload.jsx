@@ -79,7 +79,7 @@ function ImgUpload() {
   }, []);
 
   const preventDefaults = (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     e.stopPropagation();
   };
 
