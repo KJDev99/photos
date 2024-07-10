@@ -46,7 +46,6 @@ function ImgUpload() {
 
   const containerRef = useRef(null);
 
-  // console.log(userIdentifier)
   useEffect(() => {
     if (width > 0 && height > 0 && containerRef.current) {
       containerRef.current.scrollIntoView({ behavior: "smooth" });
@@ -127,7 +126,6 @@ function ImgUpload() {
       setTranslateY(translateY + dy);
       setStartX(e.clientX);
       setStartY(e.clientY);
-      // console.log('test')
     }
   };
   const handleTouchStart = (e) => {
@@ -466,10 +464,8 @@ function ImgUpload() {
           const response = await api.put(`color/update/${getId}`, payload, {
             headers,
           });
-          console.log(updatedColors, 'asd')
           const newImage = `${response.data.image}?timestamp=${timestamp}`;
           setImage(newImage);
-          console.log("Updated color:", response.data);
           saveState(
             response.data.uuid,
             newImage,
@@ -488,9 +484,6 @@ function ImgUpload() {
   const handleSortColors = async () => {
     const userIdentifier = Cookies.get("user_identifier");
     const token = sessionStorage.getItem("succesToken");
-
-    console.log(userIdentifier, "user_identifier");
-    console.log(token, "token");
 
     const headers = {};
 
@@ -517,7 +510,6 @@ function ImgUpload() {
       }));
 
       setColors(initialColors);
-      console.log(initialColors, "sort-colors");
       setShowSort(false); // Sort tugmasini yopish
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
@@ -527,9 +519,6 @@ function ImgUpload() {
   const handleNoSortColors = async () => {
     const userIdentifier = Cookies.get("user_identifier");
     const token = sessionStorage.getItem("succesToken");
-
-    console.log(userIdentifier, "user_identifier");
-    console.log(token, "token");
 
     const headers = {};
 
@@ -556,7 +545,6 @@ function ImgUpload() {
       }));
 
       setColors(initialColors);
-      console.log(initialColors, "nosort-colors");
       setShowSort(true); // Sort tugmasini ko'rsatish
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
