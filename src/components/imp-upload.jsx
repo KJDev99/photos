@@ -278,7 +278,7 @@ function ImgUpload() {
       setImage(newImage);
       if (response.data.colors) {
         const initialColors = response.data.colors.map((color) => ({
-          color: color.hex,
+          hex: color.hex,
           count: color.count,
         }));
         setColors(initialColors);
@@ -382,7 +382,7 @@ function ImgUpload() {
 
         if (response.data.colors) {
           const initialColors = response.data.colors.map((color) => ({
-            color: color.hex,
+            hex: color.hex,
             count: color.count,
           }));
           setColors(initialColors);
