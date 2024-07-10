@@ -53,7 +53,7 @@ function ImgUpload() {
       containerRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [width, height]);
-  const saveState = (getId, newImage, colors, numColors) => {
+  const saveState = (getId, newImage, colors, numColors, activeImage) => {
     const state = {
       width,
       height,
@@ -66,7 +66,7 @@ function ImgUpload() {
       translateY,
       scale,
       rotation,
-      activeImage,
+      activeImage: activeImage,
       sizePixel,
     };
     sessionStorage.setItem("image_upload_state", JSON.stringify(state));
@@ -244,6 +244,7 @@ function ImgUpload() {
         console.log("Image uploaded successfully:", response.data);
 
         setActiveImage(false);
+
         setUserIdentifier(response.data.user_identifier);
 
         Cookies.set("user_identifier", response.data.user_identifier);
@@ -386,13 +387,14 @@ function ImgUpload() {
           setNumColors(response.data[0].colors.length);
           setGetId(response.data[0].uuid);
           setLoading(true);
+          handleUpdateColors(256, response.data[0].uuid);
         }
       })
       .catch((error) => console.error("Error:", error))
       .finally(() => setLoading(false));
   };
 
-  const handleUpdateColors = async (newNumColors) => {
+  const handleUpdateColors = async (newNumColors, getIDD) => {
     if (newNumColors > 0) {
       const userIdentifier = Cookies.get("user_identifier");
       const token = sessionStorage.getItem("succesToken");
@@ -408,16 +410,13 @@ function ImgUpload() {
 
       try {
         const response = await api.get(
-          `/update-colors/${getId}?limit_colors=${newNumColors}`,
+          `/update-colors/${
+            getIDD ? getIDD : getId
+          }?limit_colors=${newNumColors}`,
           { headers }
         );
         setGetId(response.data.uuid);
         setData(response.data);
-        // setImage(
-        //   `${response.data.image}?timestamp=${Date.now()}?${
-        //     response.data.uuid
-        //   }?1`
-        // );
         setTimestamp(Date.now());
         const newImage = `${response.data.image}?timestamp=${Date.now()}?${
           response.data.uuid
@@ -439,7 +438,8 @@ function ImgUpload() {
             response.data.uuid,
             newImage,
             response.data.colors,
-            numColors
+            response.data.colors.length,
+            false
           );
         }
       } catch (error) {
