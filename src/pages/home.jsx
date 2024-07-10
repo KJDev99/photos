@@ -4,8 +4,7 @@ import ImgUpload from "../components/imp-upload";
 
 const Home = () => {
   return (
-    <div className="wrapper h-screen">
-      {/* <Header /> */}
+    <div className="wrapper">
       <Hero />
       <ImgUpload />
     </div>
