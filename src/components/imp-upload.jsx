@@ -46,20 +46,20 @@ function ImgUpload() {
 
   const containerRef = useRef(null);
 
+  // console.log(userIdentifier)
   useEffect(() => {
     if (width > 0 && height > 0 && containerRef.current) {
       containerRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [width, height]);
-
-  const saveState = (getId) => {
+  const saveState = (getId, newImage, colors, numColors) => {
     const state = {
       width,
       height,
-      image,
-      colors,
+      image: newImage,
+      colors: colors,
       fileName,
-      numColors,
+      numColors: numColors,
       getId,
       translateX,
       translateY,
@@ -223,7 +223,6 @@ function ImgUpload() {
   };
 
   const handleScaleChange2 = (event) => {
-    console.log("Scale", scale);
     setScale(event.target.value);
   };
 
@@ -275,27 +274,29 @@ function ImgUpload() {
         headers,
       });
       const timestamp = new Date().getTime();
-      setImage(`${response.data.image}?timestamp=${timestamp}`);
+      const newImage = `${response.data.image}?timestamp=${timestamp}`;
+      setImage(newImage);
       if (response.data.colors) {
         const initialColors = response.data.colors.map((color) => ({
           color: color.hex,
           count: color.count,
         }));
         setColors(initialColors);
-        console.log(initialColors, "data");
+        console.log(response.data, "dataeditsize");
         sessionStorage.setItem(
           "user_identifier",
           response.data.user_identifier
         );
-        saveState(response.data.uuid);
-        // `saveState` ni qanday chaqirish kerakligi o'rniga o'zingiz o'ylashingiz kerak
+        saveState(
+          response.data.uuid,
+          newImage,
+          response.data.colors,
+          response.data.colors.length
+        );
       }
-      console.log(response.data.colors);
     } catch (error) {
       console.error("Error updating pixel size:", error);
     }
-
-    // setHover2(false);
   };
 
   const handleShowMore = () => {
@@ -310,9 +311,6 @@ function ImgUpload() {
     const userIdentifier = Cookies.get("user_identifier");
     const token = sessionStorage.getItem("succesToken");
 
-    console.log(userIdentifier, "user_identifier");
-    console.log(token, "token");
-
     const headers = {};
 
     if (token) {
@@ -320,12 +318,10 @@ function ImgUpload() {
     } else {
       headers["user-identifier"] = userIdentifier;
     }
-    console.log(headers, "headers");
     api
       .get(url, { headers })
       .then((response) => {
         setData(response?.data[0]);
-        console.log(response, "successaaa");
         if (response.data[0].user_identifier) {
           setUserIdentifier(response.data[0].user_identifier);
           Cookies.set("user_identifier", userIdentifier);
@@ -338,10 +334,11 @@ function ImgUpload() {
 
         if (response.data[0].colors) {
           const initialColors = response.data[0].colors.map((color) => ({
-            color: color.hex,
+            hex: color.hex,
+            count: color.count,
           }));
           setColors(initialColors);
-          console.log(response.data[0], "response.data[0]");
+          console.log(response.data[0], "Get data");
           setNumColors(response.data[0].colors.length);
           setGetId(response.data[0].uuid);
           setLoading(true);
@@ -351,8 +348,8 @@ function ImgUpload() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    if (numColors > 0) {
+  const handleUpdateColors = async (newNumColors) => {
+    if (newNumColors > 0) {
       const userIdentifier = Cookies.get("user_identifier");
       const token = sessionStorage.getItem("succesToken");
 
@@ -365,49 +362,59 @@ function ImgUpload() {
         headers["user-identifier"] = userIdentifier;
       }
 
-      api
-        .get(`/update-colors/${getId}?limit_colors=${numColors}`, { headers })
-        .then((response) => {
-          setGetId(response.data.uuid);
-          setData(response.data);
-          console.log(data);
-          setImage(
-            `${response.data.image}?timestamp=${timestamp}?${response.data.uuid}?1`
-          );
-          setTimestamp(Date.now());
-          console.log(response.data.image, "rasm kelishi!!!");
+      try {
+        const response = await api.get(
+          `/update-colors/${getId}?limit_colors=${newNumColors}`,
+          { headers }
+        );
+        setGetId(response.data.uuid);
+        setData(response.data);
+        // setImage(
+        //   `${response.data.image}?timestamp=${Date.now()}?${
+        //     response.data.uuid
+        //   }?1`
+        // );
+        setTimestamp(Date.now());
+        const newImage = `${response.data.image}?timestamp=${Date.now()}?${
+          response.data.uuid
+        }?1`;
+        setImage(newImage);
 
-          if (response.data.colors) {
-            const initialColors = response.data.colors.map((color) => ({
-              color: color.hex,
-              count: color.count,
-            }));
-            setColors(initialColors);
-            console.log(initialColors, "data");
-            sessionStorage.setItem(
-              "user_identifier",
-              response.data.user_identifier
-            );
-            saveState(response.data.uuid);
-            // `saveState` ni qanday chaqirish kerakligi o'rniga o'zingiz o'ylashingiz kerak
-          }
-        })
-        .catch(() => {
-          setNumColors(colors.length); // Agar catch bo'lsa, `colors` uchun qiymatni o'zgartirish kerak bo'ladi
-          setInputValue(colors.length); // `setInputValue` ni qanday chaqirish kerakligi o'rniga o'zingiz o'ylashingiz kerak
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+        if (response.data.colors) {
+          const initialColors = response.data.colors.map((color) => ({
+            color: color.hex,
+            count: color.count,
+          }));
+          setColors(initialColors);
+          console.log(response.data, "response.data useeffects");
+          sessionStorage.setItem(
+            "user_identifier",
+            response.data.user_identifier
+          );
+          saveState(
+            response.data.uuid,
+            newImage,
+            response.data.colors,
+            numColors
+          );
+        }
+      } catch (error) {
+        setNumColors(colors.length); // Agar catch bo'lsa, `colors` uchun qiymatni o'zgartirish kerak bo'ladi
+        setInputValue(colors.length); // `setInputValue` ni qanday chaqirish kerakligi o'rniga o'zingiz o'ylashingiz kerak
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [numColors]);
+  };
 
   const handleButtonClick = useCallback(() => {
     if (inputActive) {
       setLoading(true);
       setHover(false);
       setInputActive(false);
-      setNumColors(inputValue);
+      const newNumColors = inputValue;
+      setNumColors(newNumColors);
+      handleUpdateColors(newNumColors); // handleUpdateColors ni yangi numColors bilan chaqiramiz
     }
   }, [inputActive, inputValue]);
 
@@ -447,9 +454,6 @@ function ImgUpload() {
 
         const userIdentifier = Cookies.get("user_identifier");
         const token = sessionStorage.getItem("succesToken");
-
-        console.log(userIdentifier, "user_identifier");
-        console.log(token, "token");
 
         const headers = {};
 
@@ -588,7 +592,6 @@ function ImgUpload() {
       });
       const data = response.data;
       setSchema(data.schema);
-      console.log(schema, "data-schema");
       console.log(response.data, "data-schema");
     } catch (error) {
       navigate("/login");
@@ -847,7 +850,7 @@ function ImgUpload() {
                               className="rounded color-picker"
                               type="color"
                               id={`colorPicker${index}`}
-                              value={item.color}
+                              value={item.hex}
                               onChange={(e) =>
                                 handleChangeColor(index, e.target.value)
                               }
