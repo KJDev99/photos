@@ -44,6 +44,8 @@ function ImgUpload() {
   const [hover2, setHover2] = useState(false);
   const [inputSizeValue, setInputSizeValue] = useState("");
 
+  const [initialDistance, setInitialDistance] = useState(null);
+
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -128,16 +130,25 @@ function ImgUpload() {
       setStartY(e.clientY);
     }
   };
+
   const handleTouchStart = (e) => {
-    setIsDragging(true);
-    setStartX(e.touches[0].clientX);
-    setStartY(e.touches[0].clientY);
+    if (e.touches.length === 2) {
+      const distance = getDistance(e.touches[0], e.touches[1]);
+      setInitialDistance(distance);
+    } else {
+      setIsDragging(true);
+      setStartX(e.touches[0].clientX);
+      setStartY(e.touches[0].clientY);
+    }
   };
 
   const handleTouchMove = (e) => {
-    e.preventDefault(); // Scrollni to'xtatish uchun
-    e.stopPropagation();
-    if (isDragging) {
+    preventDefaults(e);
+    if (e.touches.length === 2 && initialDistance) {
+      const distance = getDistance(e.touches[0], e.touches[1]);
+      const newScale = distance / initialDistance;
+      setScale(newScale);
+    } else if (isDragging) {
       const dx = (e.touches[0].clientX - startX) / scale;
       const dy = (e.touches[0].clientY - startY) / scale;
       setTranslateX((prevTranslateX) => prevTranslateX + dx);
@@ -147,8 +158,16 @@ function ImgUpload() {
     }
   };
 
-  const handleTouchEnd = () => {
-    setIsDragging(false);
+  const handleTouchEnd = (e) => {
+    if (e.touches.length < 2) {
+      setIsDragging(false);
+    }
+  };
+  const getDistance = (touch1, touch2) => {
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) +
+        Math.pow(touch2.clientY - touch1.clientY, 2)
+    );
   };
 
   useEffect(() => {
@@ -163,7 +182,15 @@ function ImgUpload() {
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [isDragging, startX, startY, translateX, translateY]);
+  }, [
+    isDragging,
+    startX,
+    startY,
+    translateX,
+    translateY,
+    scale,
+    initialDistance,
+  ]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -301,7 +328,7 @@ function ImgUpload() {
   };
 
   const handleKeyDown2 = (event) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       handleButtonClick2();
     }
   };
@@ -713,6 +740,7 @@ function ImgUpload() {
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
           >
             {image ? (
               <img
