@@ -282,7 +282,7 @@ function ImgUpload() {
         setColors(initialColors);
         setNumColors(initialColors.length);
         setInputValue(initialColors.length);
-        console.log(initialColors.length)
+        console.log(initialColors.length);
         console.log(response.data, "dataeditsize");
         sessionStorage.setItem(
           "user_identifier",
@@ -297,6 +297,12 @@ function ImgUpload() {
       }
     } catch (error) {
       console.error("Error updating pixel size:", error);
+    }
+  };
+
+  const handleKeyDown2 = (event) => {
+    if (event.key === 'Enter') {
+      handleButtonClick2();
     }
   };
 
@@ -653,6 +659,7 @@ function ImgUpload() {
                     type="number"
                     value={inputSizeValue}
                     onChange={handleSizeChange}
+                    onKeyDown={handleKeyDown2}
                   />
                 </>
               )}
