@@ -512,7 +512,7 @@ function ImgUpload() {
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color_id: color.id,
-        color: color.hex,
+        hex: color.hex,
         count: color.count,
       }));
 
@@ -551,7 +551,7 @@ function ImgUpload() {
       const data = response.data;
       const initialColors = data.colors.map((color) => ({
         color_id: color.id,
-        color: color.hex,
+        hex: color.hex,
         count: color.count,
       }));
 
