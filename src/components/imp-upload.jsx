@@ -10,6 +10,8 @@ function ImgUpload() {
   const navigate = useNavigate();
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
+  const [pendingWidth, setPendingWidth] = useState("");
+  const [pendingHeight, setPendingHeight] = useState("");
   const [image, setImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [userIdentifier, setUserIdentifier] = useState(
@@ -57,6 +59,8 @@ function ImgUpload() {
     const state = {
       width,
       height,
+      pendingHeight,
+      pendingWidth,
       image: newImage,
       colors: colors,
       fileName,
@@ -89,6 +93,33 @@ function ImgUpload() {
     handleFiles(files);
   };
 
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setWidth(pendingWidth);
+    }, 0);
+    return () => clearTimeout(handle);
+  }, [pendingWidth, height]);
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      if (pendingHeight <= +width - 50) {
+        setHeight(+width - 50);
+      } else if (pendingHeight >= +width + 50) {
+        setHeight(+width + 50);
+      } else {
+        setHeight(pendingHeight);
+      }
+    }, 0);
+    return () => clearTimeout(handle);
+  }, [pendingHeight, width]);
+
+  const handleWidthChange = (e) => {
+    setPendingWidth(e.target.value);
+  };
+
+  const handleHeightChange = (e) => {
+    setPendingHeight(e.target.value);
+  };
   const handleFiles = (files) => {
     [...files].forEach(uploadFile);
   };
@@ -604,6 +635,8 @@ function ImgUpload() {
       const parsedState = JSON.parse(savedState);
       setWidth(parsedState.width);
       setHeight(parsedState.height);
+      setPendingWidth(parsedState.pendingWidth);
+      setPendingHeight(parsedState.pendingHeight);
       setImage(parsedState.image);
       setColors(parsedState.colors);
       setFileName(parsedState.fileName);
@@ -657,8 +690,8 @@ function ImgUpload() {
           <input
             className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
             type="number"
-            value={width}
-            onChange={(e) => setWidth(e.target.value)}
+            value={pendingWidth}
+            onChange={handleWidthChange}
           />
           <p className="my-1 font-medium">
             {Math.floor(width * 3.7795275591)} px
@@ -669,8 +702,8 @@ function ImgUpload() {
           <input
             className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
             type="number"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
+            value={pendingHeight}
+            onChange={handleHeightChange}
           />
           <p className="my-1 font-medium">
             {Math.floor(height * 3.7795275591)} px
