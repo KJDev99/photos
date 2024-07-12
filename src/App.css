@@ -29,20 +29,18 @@ body {
   background: url("./Backgroundhero.jpg") center/cover no-repeat;
 }
 
-.wrapper  {
+.wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
-
-
 
 .file-input {
   display: none;
 }
 
 .file-label {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   padding: 4px 20px;
   border-radius: 4px;
@@ -52,7 +50,6 @@ body {
 .file-name {
   margin-left: 10px;
 }
-
 
 /* HTML: <div class="loader"></div> */
 .loader {
@@ -65,7 +62,7 @@ body {
   animation: l15 1s infinite linear;
 }
 .loader::before,
-.loader::after {    
+.loader::after {
   content: "";
   grid-area: 1/1;
   margin: 2px;
@@ -77,6 +74,33 @@ body {
   margin: 8px;
   animation-duration: 3s;
 }
-@keyframes l15{ 
-  100%{transform: rotate(1turn)}
+@keyframes l15 {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+@media (min-width: 1300px) {
+  .mediaedit {
+    display: flex;
+  }
+}
+@media (max-width: 1300px) and (min-width: 1024px) {
+  .mediaedit {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .buttonmedia {
+    margin-top: 32px;
+  }
+}
+@media (max-width: 1024px) {
+  .mediaedit {
+    display: flex !important;
+    width: 100%;
+  }
+  .buttonmedia {
+    margin-top: 0px;
+  }
 }

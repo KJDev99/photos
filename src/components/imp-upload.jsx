@@ -651,57 +651,71 @@ function ImgUpload() {
           </h2>
         )}
       </div>
-      <div className="flex md:mx-12 max-md:flex-col">
-        <label className="flex md:w-1/3 max-md:w-full mb-5">
-          <p className="w-max my-1 max-md:w-[110px]">Ширина (mm):</p>
-          <input
-            className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
-            type="number"
-            value={width}
-            onChange={(e) => setWidth(e.target.value)}
-          />
-          <p className="my-1 font-medium">
-            {Math.floor(width * 3.7795275591)} px
-          </p>
+      <div className="flex lg:mx-2 max-lg:flex-col">
+        <label className="flex lg:w-1/3 max-lg:w-full mb-5">
+          <div className="mediaedit">
+            <p className="w-max my-1 mx-1 max-lg:w-[110px]">
+              Ширина&nbsp;(mm):
+            </p>
+            <div className="flex">
+              <input
+                className="border mx-1 px-2 py-1 rounded max-lg:w-[150px] h-8"
+                type="number"
+                value={width}
+                onChange={(e) => setWidth(e.target.value)}
+              />
+              <p className="my-1 font-medium">
+                {Math.floor(width * 3.7795275591)}&nbsp;px
+              </p>
+            </div>
+          </div>
         </label>
-        <label className="flex md:w-1/3 max-md:w-full mb-5">
-          <p className="w-max my-1 max-md:w-[110px]">Высота (mm):</p>
-          <input
-            className="border mx-3 px-2 py-1 rounded max-md:w-[150px]"
-            type="number"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-          />
-          <p className="my-1 font-medium">
-            {Math.floor(height * 3.7795275591)} px
-          </p>
+        <label className="flex lg:w-1/3 max-lg:w-full mb-5">
+          <div className="mediaedit">
+            <p className="w-max my-1 mx-1 max-lg:w-[110px]">
+              Высота&nbsp;(mm):
+            </p>
+            <div className="flex">
+              <input
+                className="border mx-1 px-2 py-1 rounded max-lg:w-[150px] h-8"
+                type="number"
+                value={height}
+                onChange={(e) => setHeight(e.target.value)}
+              />
+              <p className="my-1 font-medium">
+                {Math.floor(height * 3.7795275591)}&nbsp;px
+              </p>
+            </div>
+          </div>
         </label>
         {!activeImage && (
-          <label className="flex cursor-pointer  md:w-1/3 max-md:w-full mb-5">
+          <label className="flex cursor-pointer  lg:w-1/3 max-lg:w-full mb-5">
             <div
-              className="my-1 capitalize  flex"
+              className=" capitalize  flex"
               onMouseEnter={() => setHover2(true)}
               onMouseLeave={() => setHover2(false)}
             >
-              <span className="mr-1">размер пикселя:</span>
-              {!hover2 ? (
-                <div className="!w-[100px] border rounded px-2 py-1 mx-3 flex items-center">
-                  {sizePixel}
-                </div>
-              ) : (
-                <>
-                  <input
-                    className="!w-[100px] border rounded px-2 py-1 mx-3 max-md:w-[150px]"
-                    placeholder="число"
-                    type="number"
-                    value={inputSizeValue}
-                    onChange={handleSizeChange}
-                    onKeyDown={handleKeyDown2}
-                  />
-                </>
-              )}
+              <div className="mediaedit">
+                <span className="mx-1  my-1">размер&nbsp;пикселя:</span>
+                {!hover2 ? (
+                  <div className="!w-[130px] border rounded px-2 py-1 mx-1 flex items-center  h-8">
+                    {sizePixel}
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      className="!w-[130px] border rounded px-2 py-1 mx-1 max-lg:w-[150px] h-8"
+                      placeholder="число"
+                      type="number"
+                      value={inputSizeValue}
+                      onChange={handleSizeChange}
+                      onKeyDown={handleKeyDown2}
+                    />
+                  </>
+                )}
+              </div>
               <button
-                className=" uppercase mx-4 inline-flex items-center justify-center text-white bg-indigo-500 border-0 px-10 focus:outline-none hover:bg-indigo-600 rounded text-lg  max-md:px-4 max-md:text-sm"
+                className="buttonmedia uppercase mx-4 inline-flex items-center justify-center h-max text-white bg-indigo-500 border-0 px-10 focus:outline-none hover:bg-indigo-600 rounded text-lg  max-md:px-4 max-md:text-sm"
                 onClick={handleButtonClick2}
               >
                 <MdKeyboardReturn className="mr-2 text-2xl mt-1" />
