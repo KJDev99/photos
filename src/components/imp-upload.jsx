@@ -779,7 +779,7 @@ function ImgUpload() {
                   position: "absolute",
                   top: "0%",
                   left: "0%",
-                  objectFit: "fill",
+                  objectFit: "cover",
                 }}
               />
             ) : (
