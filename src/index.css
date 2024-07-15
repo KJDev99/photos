@@ -1,6 +1,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@layer utilities {
+  @media print {
+    .print\:hidden {
+      display: none !important;
+    }
+    .print\:block {
+      display: block !important;
+    }
+    .print\:inline {
+      display: inline !important;
+    }
+    .print\:inline-block {
+      display: inline-block !important;
+    }
+    .print\:flex {
+      display: flex !important;
+    }
+    .print\:inline-flex {
+      display: inline-flex !important;
+    }
+    .print\:text-black {
+      color: black !important;
+    }
+    .print\:bg-white {
+      background-color: white !important;
+    }
+    .print\:max-w-full {
+      max-width: 100% !important;
+    }
+    .print\:h-auto {
+      height: auto !important;
+    }
+    .print\:m-0 {
+      margin: 0 !important;
+    }
+    .print\:p-0 {
+      padding: 0 !important;
+    }
+  }
+}
 
 .loader {
   border-top-color: #3498db;

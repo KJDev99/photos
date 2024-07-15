@@ -104,3 +104,11 @@ body {
     margin-top: 0px;
   }
 }
+@media print {
+  .hero {
+    display: none !important;
+  }
+  .print {
+    display: none !important;
+  }
+}

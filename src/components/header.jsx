@@ -3,7 +3,7 @@ import { IoPersonCircleOutline } from "react-icons/io5";
 
 function Header({ isAuthenticated }) {
   return (
-    <header className="text-gray-600 body-font h-[10%] mt-6">
+    <header className="text-gray-600 body-font h-[10%] mt-6 print">
       <div className="container mx-auto flex flex-wrap md:flex-row items-center justify-between h-full">
         <Link
           to="/"

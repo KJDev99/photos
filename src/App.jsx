@@ -4,6 +4,8 @@ import Login from "./components/logIn";
 import SignUp from "./components/Signup";
 import Header from "./components/header";
 import { useState } from "react";
+import './index.css'
+import './App.css'
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

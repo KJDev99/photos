@@ -8,8 +8,8 @@ function SignUp({ onSignUp }) {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  // const [firstName, setFirstName] = useState("");
+  // const [lastName, setLastName] = useState("");
   const [uuid, setUuid] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -21,47 +21,6 @@ function SignUp({ onSignUp }) {
     }
   }, []);
 
-  // const handleSignUp = async (e) => {
-  //   e.preventDefault();
-
-  //   const signUpData = {
-  //     username,
-  //     password,
-  //     email,
-  //     phone,
-  //     first_name: firstName,
-  //     last_name: lastName,
-  //   };
-
-  //   if (uuid) {
-  //     signUpData.uuid = uuid;
-  //   }
-
-  //   try {
-  //     const response = await fetch("http://31.129.99.177:8000/auth/register/", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(signUpData),
-  //     });
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       // Sign up muvaffaqiyatli bo'lsa, kerakli harakatlarni bajaring
-  //       navigate("/login");
-  //       onSignUp(username);
-  //       console.log("Sign up successful:", data);
-  //     } else {
-  //       // Sign up muvaffaqiyatsiz bo'lsa, xatoni ko'rsating
-  //       const errorData = await response.json();
-  //       setError(errorData.message || "Регистрация прошла неудачно");
-  //     }
-  //   } catch (error) {
-  //     setError("Ошибка сети");
-  //   }
-  // };
-
   const handleSignUp = async (e) => {
     e.preventDefault();
 
@@ -70,8 +29,8 @@ function SignUp({ onSignUp }) {
       password,
       email,
       phone,
-      first_name: firstName,
-      last_name: lastName,
+      // first_name: firstName,
+      // last_name: lastName,
     };
 
     if (uuid) {
@@ -183,7 +142,7 @@ function SignUp({ onSignUp }) {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
-          <div>
+          {/* <div>
             <label
               htmlFor="first_name"
               className="block text-sm font-medium text-gray-700"
@@ -214,7 +173,7 @@ function SignUp({ onSignUp }) {
               maxLength="150"
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
-          </div>
+          </div> */}
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"

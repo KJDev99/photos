@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import "../App.css";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
+import html2pdf from "html2pdf.js";
 
 function ImgUpload() {
   const navigate = useNavigate();
@@ -642,8 +643,24 @@ function ImgUpload() {
     }
   };
 
+  const contentRef = useRef();
+  const schemaDownload = () => {
+    const element = contentRef.current;
+    const opt = {
+      margin: [0.5, 0.5, 0.5, 0.5], // Sahifa chekkalari (yuqori, o'ng, pastki, chap)
+      filename: "myDocument.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, background: true },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    };
+    html2pdf().set(opt).from(element).save();
+  };
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <div className="container mx-auto pb-16">
+    <div className="container mx-auto pb-16" ref={contentRef}>
       <div className="flex justify-between items-center max-md:flex-col">
         {activeImage && (
           <h2 className="text-3xl my-6 max-md:text-xl max-md:my-3">
@@ -651,7 +668,7 @@ function ImgUpload() {
           </h2>
         )}
       </div>
-      <div className="flex lg:mx-2 max-lg:flex-col">
+      <div className="flex lg:mx-2 max-lg:flex-col print:hidden print">
         <label className="flex lg:w-1/3 max-lg:w-full mb-5">
           <div className="mediaedit">
             <p className="w-max my-1 mx-1 max-lg:w-[110px]">
@@ -835,7 +852,7 @@ function ImgUpload() {
             </div>
           ) : (
             <div className="flex flex-col">
-              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
+              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap print:hidden print">
                 <div className="flex max-md:flex-col">
                   <label
                     className="flex cursor-pointer"
@@ -872,7 +889,7 @@ function ImgUpload() {
                 {colors.length > 20 && (
                   <div className="my-4">
                     {showAll ? (
-                      <div className="div">
+                      <div className="div print:hidden print">
                         {showSort ? (
                           <p
                             className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
@@ -929,7 +946,7 @@ function ImgUpload() {
                     : "rang yoq"}
                 </div>
                 {colors.length > 20 && (
-                  <div className="my-4">
+                  <div className="my-4 print:hidden print">
                     {showAll ? (
                       <p
                         className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
@@ -950,7 +967,7 @@ function ImgUpload() {
               </div>
               <button
                 onClick={schemaCreate}
-                className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
+                className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
               >
                 схема
               </button>
@@ -978,8 +995,26 @@ function ImgUpload() {
                     ))
                   : ""}
               </div>
+              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
+                {schema ? (
+                  <button
+                    onClick={handlePrint}
+                    className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
+                  >
+                    скачать
+                  </button>
+                ) : (
+                  ""
+                )}
+              </div>
             </div>
           )}
+          {/* <button
+            onClick={handlePrint}
+            className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
+          >
+            скачать
+          </button> */}
         </div>
       )}
     </div>

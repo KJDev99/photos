@@ -11,6 +11,11 @@ export default {
         "2xl": "6rem",
       },
     },
+    variants: {
+      extend: {
+        display: ['print'],
+      },
+    },
   },
   plugins: [],
 };
