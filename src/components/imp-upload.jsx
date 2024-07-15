@@ -6,6 +6,8 @@ import "../App.css";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
 import html2pdf from "html2pdf.js";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 function ImgUpload() {
   const navigate = useNavigate();
@@ -643,24 +645,43 @@ function ImgUpload() {
     }
   };
 
-  const contentRef = useRef();
-  const schemaDownload = () => {
-    const element = contentRef.current;
-    const opt = {
-      margin: [0.5, 0.5, 0.5, 0.5], // Sahifa chekkalari (yuqori, o'ng, pastki, chap)
-      filename: "myDocument.pdf",
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, background: true },
-      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-    };
-    html2pdf().set(opt).from(element).save();
-  };
   const handlePrint = () => {
-    window.print();
+    // Ko'rinmas qilinishi kerak bo'lgan qismlarni yashirish
+    setLoading(true);
+    document.querySelectorAll('.print').forEach(element => {
+      element.style.display = 'none';
+    });
+    document.querySelector('.printcolor').style.marginTop = '65px';
+
+    setShowAll(true);
+
+    const content = document.querySelector("#content");
+
+    const opt = {
+      margin: 0,
+      filename: 'web-page.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, background: true  },
+      jsPDF: { unit: 'pt', format: 'a4', orientation: 'landscape' }
+    };
+
+    html2pdf().from(content).set(opt).save().then(() => {
+      document.querySelectorAll('.print').forEach(element => {
+        element.style.display = '';
+      });
+      document.querySelector('.printcolor').style.marginTop = '0px';
+      setLoading(false);
+    });
   };
 
   return (
-    <div className="container mx-auto pb-16" ref={contentRef}>
+    <>
+    {loading && (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-500  z-50">
+        <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+      </div>
+    )}
+    <div className="container mx-auto pb-16" id="content">
       <div className="flex justify-between items-center max-md:flex-col">
         {activeImage && (
           <h2 className="text-3xl my-6 max-md:text-xl max-md:my-3">
@@ -810,12 +831,6 @@ function ImgUpload() {
         ""
       )}
 
-      {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-500  z-50">
-          <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-        </div>
-      )}
-
       {image && (
         <div className="flex flex-col">
           {activeImage ? (
@@ -911,7 +926,7 @@ function ImgUpload() {
                     )}
                   </div>
                 )}
-                <div className="flex flex-wrap gap-4 mx-auto justify-center">
+                <div className="flex flex-wrap gap-4 mx-auto justify-center printcolor">
                   {colors.length > 0
                     ? colors
                         .slice(0, showAll ? colors.length : 20)
@@ -921,7 +936,8 @@ function ImgUpload() {
                             className="rounded h-14 w-10 flex flex-col"
                           >
                             <input
-                              className="rounded color-picker"
+                              className={`rounded color-picker`}
+                              style={{ backgroundColor: `${item.hex}`, color: `${item.hex}` }}
                               type="color"
                               id={`colorPicker${index}`}
                               value={item.hex}
@@ -971,7 +987,7 @@ function ImgUpload() {
               >
                 схема
               </button>
-              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
+              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap printsxema">
                 {schema
                   ? schema.map((group, groupIndex) => (
                       <div key={groupIndex} className="mb-8 space-x-4">
@@ -1009,15 +1025,11 @@ function ImgUpload() {
               </div>
             </div>
           )}
-          {/* <button
-            onClick={handlePrint}
-            className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
-          >
-            скачать
-          </button> */}
+         
         </div>
       )}
     </div>
+    </>
   );
 }
 
