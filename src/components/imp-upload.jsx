@@ -6,8 +6,6 @@ import "../App.css";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
 import html2pdf from "html2pdf.js";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 function ImgUpload() {
   const navigate = useNavigate();
@@ -22,7 +20,6 @@ function ImgUpload() {
   const [colors, setColors] = useState([]);
   const [showSort, setShowSort] = useState(true);
   const [activeImage, setActiveImage] = useState(true);
-  // const [imageVisible, setImageVisible] = useState(false);
   const [data, setData] = useState(null);
   const [fileName, setFileName] = useState("Файл не выбран");
   const [numColors, setNumColors] = useState(0);
@@ -646,7 +643,6 @@ function ImgUpload() {
   };
 
   const handlePrint = () => {
-    // Ko'rinmas qilinishi kerak bo'lgan qismlarni yashirish
     setLoading(true);
     document.querySelectorAll('.print').forEach(element => {
       element.style.display = 'none';
@@ -665,12 +661,46 @@ function ImgUpload() {
       jsPDF: { unit: 'pt', format: 'a4', orientation: 'landscape' }
     };
 
-    html2pdf().from(content).set(opt).save().then(() => {
-      document.querySelectorAll('.print').forEach(element => {
-        element.style.display = '';
+    html2pdf().from(content).set(opt).save().outputPdf('datauristring').then((pdfAsString) => {
+      const userIdentifier = Cookies.get("user_identifier");
+      const token = sessionStorage.getItem("succesToken");
+  
+      const headers = {
+        "user-identifier": userIdentifier,
+        Authorization: `Bearer ${token}`,
+      };
+  
+      const byteString = atob(pdfAsString.split(',')[1]);
+      const mimeString = pdfAsString.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mimeString });
+  
+      const formData = new FormData();
+      formData.append('file', blob, 'web-page.pdf');
+
+  
+      api.post(
+        '/file/pdf/',
+        formData,
+        { headers }
+      )
+      .then(response => {
+        console.log('File sent successfully', response);
+      })
+      .catch(error => {
+        console.error('Error sending file', error);
+      })
+      .finally(() => {
+        document.querySelectorAll('.print').forEach(element => {
+          element.style.display = '';
+        });
+        document.querySelector('.printcolor').style.marginTop = '0px';
+        setLoading(false);
       });
-      document.querySelector('.printcolor').style.marginTop = '0px';
-      setLoading(false);
     });
   };
 

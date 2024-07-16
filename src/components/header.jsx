@@ -22,9 +22,10 @@ function Header({ isAuthenticated }) {
         </Link>
 
         {isAuthenticated ? (
-          <div className="flex items-center">
+
+          <Link to="/getpdf" className="flex items-center">
             <IoPersonCircleOutline className="text-4xl" />
-          </div>
+          </Link>
         ) : (
           ""
         )}

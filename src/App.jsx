@@ -4,8 +4,9 @@ import Login from "./components/logIn";
 import SignUp from "./components/Signup";
 import Header from "./components/header";
 import { useState } from "react";
-import './index.css'
-import './App.css'
+import "./index.css";
+import "./App.css";
+import GetPdf from "./pages/getPdf";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -32,6 +33,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/signup" element={<SignUp onSignUp={handleLogin} />} />
+        <Route path="/getpdf" element={<GetPdf />} />
       </Routes>
     </div>
   );

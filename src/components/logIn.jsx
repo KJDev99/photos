@@ -32,10 +32,6 @@ function Login({ onLogin }) {
         requestBody.uuid = uuid;
       }
   
-      console.log(requestBody);
-      console.log(requestBody, "requestBody");
-      console.log(uuid, "getid");
-  
       const response = await api.post('/auth/login/', requestBody);
   
       if (response.status === 200) {
