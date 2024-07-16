@@ -34,7 +34,7 @@ const GetPdf = () => {
           {pdfData.map((pdf, index) => {
             return (
               <a
-                href={`http://192.168.0.163:8000${pdf.file}`}
+                href={`http://31.129.99.177:8000${pdf.file}`}
                 target="_blank"
                 className="border rounded-xl mb-4 flex h-14 items-center px-4 justify-between"
                 download={`file_${index + 1}.pdf`}
