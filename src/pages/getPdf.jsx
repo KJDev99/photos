@@ -18,7 +18,7 @@ const GetPdf = () => {
         };
 
         const response = await api.get("/file/pdf/", { headers });
-        setPdfData(response.data);
+        setPdfData(response.data.reverse());
       } catch (err) {
         setError(err);
       }

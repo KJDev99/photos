@@ -74,7 +74,7 @@ function ImgUpload() {
 
   useEffect(() => {
     window.onbeforeunload = () => {
-      sessionStorage.clear();
+      sessionStorage.removeItem("image_upload_state");
     };
   }, []);
 
@@ -310,7 +310,7 @@ function ImgUpload() {
         headers,
       });
       const timestamp = new Date().getTime();
-      const newImage = `${response.data.image}?timestamp=${timestamp}`;
+      const newImage = `${response.data.image}`;
       setImage(newImage);
       if (response.data.colors) {
         const initialColors = response.data.colors.map((color) => ({
@@ -373,9 +373,7 @@ function ImgUpload() {
           Cookies.set("UUID", response.data[0].uuid);
         }
 
-        setImage(
-          `${response.data[0].image}?timestamp=${timestamp}?${response.data[0].uuid}`
-        );
+        setImage(`${response.data[0].image}`);
 
         if (response.data[0].colors) {
           const initialColors = response.data[0].colors.map((color) => ({
@@ -418,9 +416,7 @@ function ImgUpload() {
         setGetId(response.data.uuid);
         setData(response.data);
         setTimestamp(Date.now());
-        const newImage = `${response.data.image}?timestamp=${Date.now()}?${
-          response.data.uuid
-        }?1`;
+        const newImage = `${response.data.image}`;
         setImage(newImage);
 
         if (response.data.colors) {
@@ -510,7 +506,7 @@ function ImgUpload() {
           const response = await api.put(`color/update/${getId}`, payload, {
             headers,
           });
-          const newImage = `${response.data.image}?timestamp=${timestamp}`;
+          const newImage = `${response.data.image}`;
           setImage(newImage);
           saveState(
             response.data.uuid,
@@ -644,421 +640,476 @@ function ImgUpload() {
 
   const handlePrint = () => {
     setLoading(true);
-    document.querySelectorAll('.print').forEach(element => {
-      element.style.display = 'none';
+    document.querySelectorAll(".print").forEach((element) => {
+      element.style.display = "none";
     });
-    document.querySelector('.printcolor').style.marginTop = '65px';
+    document.querySelector(".printcolor").style.marginTop = "65px";
 
     setShowAll(true);
 
     const content = document.querySelector("#content");
 
-    const opt = {
-      margin: 0,
-      filename: 'web-page.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, background: true  },
-      jsPDF: { unit: 'pt', format: 'a4', orientation: 'landscape' }
+    // Get all images within the content
+    const images = content.querySelectorAll("img");
+
+    const convertImgToBase64 = (url) => {
+      return fetch(url)
+        .then((response) => response.blob())
+        .then((blob) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        });
     };
 
-    html2pdf().from(content).set(opt).save().outputPdf('datauristring').then((pdfAsString) => {
-      const userIdentifier = Cookies.get("user_identifier");
-      const token = sessionStorage.getItem("succesToken");
-  
-      const headers = {
-        "user-identifier": userIdentifier,
-        Authorization: `Bearer ${token}`,
-      };
-  
-      const byteString = atob(pdfAsString.split(',')[1]);
-      const mimeString = pdfAsString.split(',')[0].split(':')[1].split(';')[0];
-      const ab = new ArrayBuffer(byteString.length);
-      const ia = new Uint8Array(ab);
-      for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
+    const replaceImageSources = async () => {
+      for (const img of images) {
+        try {
+          const base64URL = await convertImgToBase64(img.src);
+          img.src = base64URL;
+        } catch (error) {
+          console.error("Error converting image to base64:", error);
+        }
       }
-      const blob = new Blob([ab], { type: mimeString });
-  
-      const formData = new FormData();
-      formData.append('file', blob, 'web-page.pdf');
+    };
 
-  
-      api.post(
-        '/file/pdf/',
-        formData,
-        { headers }
-      )
-      .then(response => {
-        console.log('File sent successfully', response);
-      })
-      .catch(error => {
-        console.error('Error sending file', error);
-      })
-      .finally(() => {
-        document.querySelectorAll('.print').forEach(element => {
-          element.style.display = '';
+    replaceImageSources().then(() => {
+      const opt = {
+        margin: 0,
+        filename: "web-page.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, background: true },
+        jsPDF: { unit: "pt", format: "a4", orientation: "landscape" },
+      };
+
+      html2pdf()
+        .from(content)
+        .set(opt)
+        .save()
+        .outputPdf("datauristring")
+        .then((pdfAsString) => {
+          const userIdentifier = Cookies.get("user_identifier");
+          const token = sessionStorage.getItem("succesToken");
+
+          const headers = {
+            "user-identifier": userIdentifier,
+            Authorization: `Bearer ${token}`,
+          };
+
+          const byteString = atob(pdfAsString.split(",")[1]);
+          const mimeString = pdfAsString
+            .split(",")[0]
+            .split(":")[1]
+            .split(";")[0];
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+          }
+          const blob = new Blob([ab], { type: mimeString });
+
+          console.log(opt);
+          const formData = new FormData();
+          formData.append("file", blob, "web-page.pdf");
+
+          api
+            .post("/file/pdf/", formData, { headers })
+            .then((response) => {
+              console.log("File sent successfully", response);
+            })
+            .catch((error) => {
+              console.error("Error sending file", error);
+            })
+            .finally(() => {
+              document.querySelectorAll(".print").forEach((element) => {
+                element.style.display = "";
+              });
+              document.querySelector(".printcolor").style.marginTop = "0px";
+              setLoading(false);
+            });
+        })
+        .catch((error) => {
+          console.error("Error generating PDF", error);
+          setLoading(false);
         });
-        document.querySelector('.printcolor').style.marginTop = '0px';
-        setLoading(false);
-      });
     });
   };
 
   return (
     <>
-    {loading && (
-      <div className="fixed inset-0 flex items-center justify-center bg-gray-500  z-50">
-        <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-      </div>
-    )}
-    <div className="container mx-auto pb-16" id="content">
-      <div className="flex justify-between items-center max-md:flex-col">
-        {activeImage && (
-          <h2 className="text-3xl my-6 max-md:text-xl max-md:my-3">
-            Загрузить изображение:
-          </h2>
-        )}
-      </div>
-      <div className="flex lg:mx-2 max-lg:flex-col print:hidden print">
-        <label className="flex lg:w-1/3 max-lg:w-full mb-5">
-          <div className="mediaedit">
-            <p className="w-max my-1 mx-1 max-lg:w-[110px]">
-              Ширина&nbsp;(mm):
-            </p>
-            <div className="flex">
-              <input
-                className="border mx-1 px-2 py-1 rounded max-lg:w-[150px] h-8"
-                type="number"
-                value={width}
-                onChange={(e) => setWidth(e.target.value)}
-              />
-              <p className="my-1 font-medium">
-                {Math.floor(width * 3.7795275591)}&nbsp;px
-              </p>
-            </div>
-          </div>
-        </label>
-        <label className="flex lg:w-1/3 max-lg:w-full mb-5">
-          <div className="mediaedit">
-            <p className="w-max my-1 mx-1 max-lg:w-[110px]">
-              Высота&nbsp;(mm):
-            </p>
-            <div className="flex">
-              <input
-                className="border mx-1 px-2 py-1 rounded max-lg:w-[150px] h-8"
-                type="number"
-                value={height}
-                onChange={(e) => setHeight(e.target.value)}
-              />
-              <p className="my-1 font-medium">
-                {Math.floor(height * 3.7795275591)}&nbsp;px
-              </p>
-            </div>
-          </div>
-        </label>
-        {!activeImage && (
-          <label className="flex cursor-pointer  lg:w-1/3 max-lg:w-full mb-5">
-            <div
-              className=" capitalize  flex"
-              onMouseEnter={() => setHover2(true)}
-              onMouseLeave={() => setHover2(false)}
-            >
-              <div className="mediaedit">
-                <span className="mx-1  my-1">размер&nbsp;пикселя:</span>
-                {!hover2 ? (
-                  <div className="!w-[130px] border rounded px-2 py-1 mx-1 flex items-center  h-8">
-                    {sizePixel}
-                  </div>
-                ) : (
-                  <>
-                    <input
-                      className="!w-[130px] border rounded px-2 py-1 mx-1 max-lg:w-[150px] h-8"
-                      placeholder="число"
-                      type="number"
-                      value={inputSizeValue}
-                      onChange={handleSizeChange}
-                      onKeyDown={handleKeyDown2}
-                    />
-                  </>
-                )}
-              </div>
-              <button
-                className="buttonmedia uppercase mx-4 inline-flex items-center justify-center h-max text-white bg-indigo-500 border-0 px-10 focus:outline-none hover:bg-indigo-600 rounded text-lg  max-md:px-4 max-md:text-sm"
-                onClick={handleButtonClick2}
-              >
-                <MdKeyboardReturn className="mr-2 text-2xl mt-1" />
-              </button>
-            </div>
-          </label>
-        )}
-      </div>
-      {activeImage && (
-        <div className="input-container">
-          <div className="md:mx-36 mb-10 flex items-center">
-            <p className="w-max my-1 mr-3">Загрузить изображение:</p>
-            <input
-              className="file-input"
-              type="file"
-              id="file"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-            <div className="flex max-md:flex-col ">
-              <label htmlFor="file" className="file-label">
-                Выберите файл
-              </label>
-              <span className="file-name">{fileName}</span>
-            </div>
-          </div>
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-500  z-50">
+          <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
         </div>
       )}
-      {width > 0 && height > 0 ? (
-        <div className="w-full overflow-x-auto" ref={containerRef}>
-          <div
-            className="rectangle mx-auto  !border-dashed"
-            style={{
-              width: `${width}mm`,
-              height: `${height}mm`,
-              border: "1px solid black",
-              position: "relative",
-              overflow: "hidden",
-            }}
-            onDragEnter={preventDefaults}
-            onDragOver={preventDefaults}
-            onDragLeave={preventDefaults}
-            onDrop={handleDrop}
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-          >
-            {image ? (
-              <img
-                src={`${image}`}
-                alt="Uploaded"
-                style={{
-                  width: `${Math.floor(width * 3.7795275591)}px`,
-                  height: `${Math.floor(height * 3.7795275591)}px`,
-                  transform: `scale(${scale}) translate(${translateX}px, ${translateY}px) rotate(${rotation}deg)`,
-                  cursor: isDragging ? "grabbing" : "zoom-out",
-                  touchAction: "none", // touch actionni to'xtatish uchun
-                  position: "absolute",
-                  top: "0%",
-                  left: "0%",
-                  objectFit: "cover",
-                }}
+      <div className="container mx-auto pb-16" id="content">
+        <div className="flex justify-between items-center max-md:flex-col">
+          {activeImage && (
+            <h2 className="text-3xl my-6 max-md:text-xl max-md:my-3">
+              Загрузить изображение:
+            </h2>
+          )}
+        </div>
+        <div className="flex lg:mx-2 max-lg:flex-col print:hidden print">
+          <label className="flex lg:w-1/3 max-lg:w-full mb-5">
+            <div className="mediaedit">
+              <p className="w-max my-1 mx-1 max-lg:w-[110px]">
+                Ширина&nbsp;(mm):
+              </p>
+              <div className="flex">
+                <input
+                  className="border mx-1 px-2 py-1 rounded max-lg:w-[150px] h-8"
+                  type="number"
+                  value={width}
+                  onChange={(e) => setWidth(e.target.value)}
+                />
+                <p className="my-1 font-medium">
+                  {Math.floor(width * 3.7795275591)}&nbsp;px
+                </p>
+              </div>
+            </div>
+          </label>
+          <label className="flex lg:w-1/3 max-lg:w-full mb-5">
+            <div className="mediaedit">
+              <p className="w-max my-1 mx-1 max-lg:w-[110px]">
+                Высота&nbsp;(mm):
+              </p>
+              <div className="flex">
+                <input
+                  className="border mx-1 px-2 py-1 rounded max-lg:w-[150px] h-8"
+                  type="number"
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                />
+                <p className="my-1 font-medium">
+                  {Math.floor(height * 3.7795275591)}&nbsp;px
+                </p>
+              </div>
+            </div>
+          </label>
+          {!activeImage && (
+            <label className="flex cursor-pointer  lg:w-1/3 max-lg:w-full mb-5">
+              <div
+                className=" capitalize  flex"
+                onMouseEnter={() => setHover2(true)}
+                onMouseLeave={() => setHover2(false)}
+              >
+                <div className="mediaedit">
+                  <span className="mx-1  my-1">размер&nbsp;пикселя:</span>
+                  {!hover2 ? (
+                    <div className="!w-[130px] border rounded px-2 py-1 mx-1 flex items-center  h-8">
+                      {sizePixel}
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        className="!w-[130px] border rounded px-2 py-1 mx-1 max-lg:w-[150px] h-8"
+                        placeholder="число"
+                        type="number"
+                        value={inputSizeValue}
+                        onChange={handleSizeChange}
+                        onKeyDown={handleKeyDown2}
+                      />
+                    </>
+                  )}
+                </div>
+                <button
+                  className="buttonmedia uppercase mx-4 inline-flex items-center justify-center h-max text-white bg-indigo-500 border-0 px-10 focus:outline-none hover:bg-indigo-600 rounded text-lg  max-md:px-4 max-md:text-sm"
+                  onClick={handleButtonClick2}
+                >
+                  <MdKeyboardReturn className="mr-2 text-2xl mt-1" />
+                </button>
+              </div>
+            </label>
+          )}
+        </div>
+        {activeImage && (
+          <div className="input-container">
+            <div className="md:mx-36 mb-10 flex items-center">
+              <p className="w-max my-1 mr-3">Загрузить изображение:</p>
+              <input
+                className="file-input"
+                type="file"
+                id="file"
+                accept="image/*"
+                onChange={handleImageChange}
               />
+              <div className="flex max-md:flex-col ">
+                <label htmlFor="file" className="file-label">
+                  Выберите файл
+                </label>
+                <span className="file-name">{fileName}</span>
+              </div>
+            </div>
+          </div>
+        )}
+        {width > 0 && height > 0 ? (
+          <div className="w-full overflow-x-auto" ref={containerRef}>
+            <div
+              className="rectangle mx-auto  !border-dashed"
+              style={{
+                width: `${width}mm`,
+                height: `${height}mm`,
+                border: "1px solid black",
+                position: "relative",
+                overflow: "hidden",
+              }}
+              onDragEnter={preventDefaults}
+              onDragOver={preventDefaults}
+              onDragLeave={preventDefaults}
+              onDrop={handleDrop}
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+            >
+              {image ? (
+                <img
+                  src={`${image}`}
+                  alt="Uploaded"
+                  style={{
+                    width: `${Math.floor(width * 3.7795275591)}px`,
+                    height: `${Math.floor(height * 3.7795275591)}px`,
+                    transform: `scale(${scale}) translate(${translateX}px, ${translateY}px) rotate(${rotation}deg)`,
+                    cursor: isDragging ? "grabbing" : "zoom-out",
+                    touchAction: "none", // touch actionni to'xtatish uchun
+                    position: "absolute",
+                    top: "0%",
+                    left: "0%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex justify-center items-center">
+                  Перетащите изображение сюда
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          ""
+        )}
+
+        {image && (
+          <div className="flex flex-col">
+            {activeImage ? (
+              <div className="flex justify-center items-center my-4 max-md:flex-col">
+                <div className="mx-auto flex w-max justify-center my-4">
+                  <label className="mx-2 flex items-center">
+                    Шкала:
+                    <input
+                      type="range"
+                      min="1"
+                      max="3"
+                      step="0.1"
+                      value={scale}
+                      onChange={handleScaleChange2}
+                      className="mx-2 mt-1"
+                    />
+                  </label>
+                  <div className="mx-2 flex">
+                    <button className="mx-1" onClick={rotateLeft}>
+                      <FaArrowRotateLeft />
+                    </button>
+                    <button className="mx-1" onClick={rotateRight}>
+                      <FaArrowRotateRight />
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
+                  onClick={handleUpload}
+                >
+                  Перевести&nbsp;в&nbsp;пиксели
+                </button>
+              </div>
             ) : (
-              <div className="w-full h-full flex justify-center items-center">
-                Перетащите изображение сюда
+              <div className="flex flex-col">
+                <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap print:hidden print">
+                  <div className="flex max-md:flex-col">
+                    <label
+                      className="flex cursor-pointer"
+                      onClick={handleLabelHoverEnter}
+                    >
+                      <div className="my-1 capitalize  flex">
+                        <span className="mr-3">количество цветов:</span>
+                        {!hover ? (
+                          <div className="w-[100px] border rounded px-1">
+                            {numColors}
+                          </div>
+                        ) : (
+                          <input
+                            className="w-[100px] border rounded px-1"
+                            placeholder="число"
+                            type="number"
+                            value={inputValue}
+                            onChange={handleInputChange}
+                          />
+                        )}
+                      </div>
+                    </label>
+                  </div>
+                  <div className="flex max-md:justify-center max-md:w-full">
+                    <button
+                      className=" uppercase mx-4 my-2 inline-flex items-center justify-center text-white bg-indigo-500 border-0 py-2 px-10 focus:outline-none hover:bg-indigo-600 rounded text-lg max-md:py-2 max-md:px-4 max-md:text-sm"
+                      onClick={handleButtonClick}
+                    >
+                      <MdKeyboardReturn className="mr-2 text-2xl mt-1" />
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  {colors.length > 20 && (
+                    <div className="my-4">
+                      {showAll ? (
+                        <div className="div print:hidden print">
+                          {showSort ? (
+                            <p
+                              className="print capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
+                              onClick={handleSortColors}
+                            >
+                              Сортировать
+                            </p>
+                          ) : (
+                            <p
+                              className="print capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
+                              onClick={handleNoSortColors}
+                            >
+                              нет сортировки
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-4 mx-auto justify-center printcolor">
+                    {colors.length > 0
+                      ? colors
+                          .slice(0, showAll ? colors.length : 20)
+                          .map((item, index) => (
+                            <div
+                              key={index}
+                              className="rounded h-14 w-10 flex flex-col"
+                            >
+                              <input
+                                className={`rounded color-picker`}
+                                style={{
+                                  backgroundColor: `${item.hex}`,
+                                  color: `${item.hex}`,
+                                }}
+                                type="color"
+                                id={`colorPicker${index}`}
+                                value={item.hex}
+                                onChange={(e) =>
+                                  handleChangeColor(index, e.target.value)
+                                }
+                                onBlur={handleBlur}
+                              />
+                              <div className="flex flex-col items-center">
+                                <label
+                                  className="text-xs"
+                                  htmlFor={`colorPicker${index}`}
+                                >
+                                  {item.hex}
+                                </label>
+                                <div className="text-xs">
+                                  {item.count}&nbsp;PX
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                      : "rang yoq"}
+                  </div>
+                  {colors.length > 20 && (
+                    <div className="my-4 print:hidden print">
+                      {showAll ? (
+                        <p
+                          className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
+                          onClick={handleHideColors}
+                        >
+                          скрыть больше
+                        </p>
+                      ) : (
+                        <p
+                          className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
+                          onClick={handleShowMore}
+                        >
+                          Показать больше
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
+                  {schema ? (
+                    <button
+                      onClick={handlePrint}
+                      className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
+                    >
+                      скачать
+                    </button>
+                  ) : (
+                    <button
+                      onClick={schemaCreate}
+                      className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
+                    >
+                      схема
+                    </button>
+                  )}
+                </div>
+
+                <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap printsxema">
+                  {/* <img src={`${image}`} alt="" /> */}
+                  <br />
+                  {schema
+                    ? schema.map((group, groupIndex) => (
+                        <div key={groupIndex} className="mb-8 space-x-4">
+                          <h2 className="text-lg font-bold"></h2>
+                          <div className="">
+                            {group.groups.map((item) => (
+                              <div key={item.id} className="flex">
+                                {item.colors.map((color, colorIndex) => (
+                                  <div
+                                    key={colorIndex}
+                                    className="w-6 h-6 flex items-center justify-center text-xs !text-[red] border border-dashed border-black"
+                                    style={{ backgroundColor: color.hex_code }}
+                                  >
+                                    {color.color_name}
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    : ""}
+                </div>
+                {/* <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
+                  {schema ? (
+                    <button
+                      onClick={handlePrint}
+                      className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
+                    >
+                      скачать
+                    </button>
+                  ) : (
+                    ""
+                  )}
+                </div> */}
               </div>
             )}
           </div>
-        </div>
-      ) : (
-        ""
-      )}
-
-      {image && (
-        <div className="flex flex-col">
-          {activeImage ? (
-            <div className="flex justify-center items-center my-4 max-md:flex-col">
-              <div className="mx-auto flex w-max justify-center my-4">
-                <label className="mx-2 flex items-center">
-                  Шкала:
-                  <input
-                    type="range"
-                    min="1"
-                    max="3"
-                    step="0.1"
-                    value={scale}
-                    onChange={handleScaleChange2}
-                    className="mx-2 mt-1"
-                  />
-                </label>
-                <div className="mx-2 flex">
-                  <button className="mx-1" onClick={rotateLeft}>
-                    <FaArrowRotateLeft />
-                  </button>
-                  <button className="mx-1" onClick={rotateRight}>
-                    <FaArrowRotateRight />
-                  </button>
-                </div>
-              </div>
-
-              <button
-                className="uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
-                onClick={handleUpload}
-              >
-                Перевести&nbsp;в&nbsp;пиксели
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col">
-              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap print:hidden print">
-                <div className="flex max-md:flex-col">
-                  <label
-                    className="flex cursor-pointer"
-                    onClick={handleLabelHoverEnter}
-                  >
-                    <div className="my-1 capitalize  flex">
-                      <span className="mr-3">количество цветов:</span>
-                      {!hover ? (
-                        <div className="w-[100px] border rounded px-1">
-                          {numColors}
-                        </div>
-                      ) : (
-                        <input
-                          className="w-[100px] border rounded px-1"
-                          placeholder="число"
-                          type="number"
-                          value={inputValue}
-                          onChange={handleInputChange}
-                        />
-                      )}
-                    </div>
-                  </label>
-                </div>
-                <div className="flex max-md:justify-center max-md:w-full">
-                  <button
-                    className=" uppercase mx-4 my-2 inline-flex items-center justify-center text-white bg-indigo-500 border-0 py-2 px-10 focus:outline-none hover:bg-indigo-600 rounded text-lg max-md:py-2 max-md:px-4 max-md:text-sm"
-                    onClick={handleButtonClick}
-                  >
-                    <MdKeyboardReturn className="mr-2 text-2xl mt-1" />
-                  </button>
-                </div>
-              </div>
-              <div>
-                {colors.length > 20 && (
-                  <div className="my-4">
-                    {showAll ? (
-                      <div className="div print:hidden print">
-                        {showSort ? (
-                          <p
-                            className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
-                            onClick={handleSortColors}
-                          >
-                            Сортировать
-                          </p>
-                        ) : (
-                          <p
-                            className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
-                            onClick={handleNoSortColors}
-                          >
-                            нет сортировки
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      ""
-                    )}
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-4 mx-auto justify-center printcolor">
-                  {colors.length > 0
-                    ? colors
-                        .slice(0, showAll ? colors.length : 20)
-                        .map((item, index) => (
-                          <div
-                            key={index}
-                            className="rounded h-14 w-10 flex flex-col"
-                          >
-                            <input
-                              className={`rounded color-picker`}
-                              style={{ backgroundColor: `${item.hex}`, color: `${item.hex}` }}
-                              type="color"
-                              id={`colorPicker${index}`}
-                              value={item.hex}
-                              onChange={(e) =>
-                                handleChangeColor(index, e.target.value)
-                              }
-                              onBlur={handleBlur}
-                            />
-                            <div className="flex flex-col items-center">
-                              <label
-                                className="text-xs"
-                                htmlFor={`colorPicker${index}`}
-                              >
-                                {item.hex}
-                              </label>
-                              <div className="text-xs">
-                                {item.count}&nbsp;PX
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                    : "rang yoq"}
-                </div>
-                {colors.length > 20 && (
-                  <div className="my-4 print:hidden print">
-                    {showAll ? (
-                      <p
-                        className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
-                        onClick={handleHideColors}
-                      >
-                        скрыть больше
-                      </p>
-                    ) : (
-                      <p
-                        className="capitalize bg-transparent cursor-pointer text-center underline text-[blue]"
-                        onClick={handleShowMore}
-                      >
-                        Показать больше
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={schemaCreate}
-                className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
-              >
-                схема
-              </button>
-              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap printsxema">
-                {schema
-                  ? schema.map((group, groupIndex) => (
-                      <div key={groupIndex} className="mb-8 space-x-4">
-                        <h2 className="text-lg font-bold"></h2>
-                        <div className="">
-                          {group.groups.map((item) => (
-                            <div key={item.id} className="flex">
-                              {item.colors.map((color, colorIndex) => (
-                                <div
-                                  key={colorIndex}
-                                  className="w-6 h-6 flex items-center justify-center text-xs !text-[red] border border-dashed border-black"
-                                  style={{ backgroundColor: color.hex_code }}
-                                >
-                                  {color.color_name}
-                                </div>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))
-                  : ""}
-              </div>
-              <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
-                {schema ? (
-                  <button
-                    onClick={handlePrint}
-                    className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
-                  >
-                    скачать
-                  </button>
-                ) : (
-                  ""
-                )}
-              </div>
-            </div>
-          )}
-         
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </>
   );
 }

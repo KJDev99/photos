@@ -1,7 +1,26 @@
-import { Link } from "react-router-dom";
-import { IoPersonCircleOutline } from "react-icons/io5";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { MdOutlinePictureAsPdf } from "react-icons/md";
+import { IoExitOutline } from "react-icons/io5";
 
-function Header({ isAuthenticated }) {
+function Header() {
+  const [showModal, setShowModal] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const token = sessionStorage.getItem("succesToken");
+
+  const handleLogout = () => {
+    setShowModal(false);
+    sessionStorage.clear();
+    navigate("/");
+  };
+
+  const handleIconClick = () => {
+    if (location.pathname === "/getpdf") {
+      setShowModal(true);
+    }
+  };
+
   return (
     <header className="text-gray-600 body-font h-[10%] mt-6 print">
       <div className="container mx-auto flex flex-wrap md:flex-row items-center justify-between h-full">
@@ -21,15 +40,42 @@ function Header({ isAuthenticated }) {
           <span className="ml-3 text-xl">PixelArt</span>
         </Link>
 
-        {isAuthenticated ? (
-
-          <Link to="/getpdf" className="flex items-center">
-            <IoPersonCircleOutline className="text-4xl" />
-          </Link>
+        {token ? (
+          location.pathname === "/getpdf" ? (
+            <button onClick={handleIconClick} className="flex items-center">
+              <IoExitOutline className="text-4xl" />
+            </button>
+          ) : (
+            <Link to="/getpdf" className="flex items-center">
+              <MdOutlinePictureAsPdf className="text-4xl" />
+            </Link>
+          )
         ) : (
           ""
         )}
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-xl mb-4">Вы действительно хотите выйти?</h2>
+            <div className="flex justify-end">
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded mr-2"
+              >
+                Да
+              </button>
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
+              >
+                Нет
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
