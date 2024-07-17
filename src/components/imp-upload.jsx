@@ -1093,18 +1093,7 @@ function ImgUpload() {
                       ))
                     : ""}
                 </div>
-                {/* <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap">
-                  {schema ? (
-                    <button
-                      onClick={handlePrint}
-                      className="print:hidden print uppercase inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-sm w-[200px] text-center mx-auto justify-center max-md:py-2 max-md:px-4 max-md:text-sm"
-                    >
-                      скачать
-                    </button>
-                  ) : (
-                    ""
-                  )}
-                </div> */}
+          
               </div>
             )}
           </div>
