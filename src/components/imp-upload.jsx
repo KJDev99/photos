@@ -75,6 +75,7 @@ function ImgUpload() {
   useEffect(() => {
     window.onbeforeunload = () => {
       sessionStorage.removeItem("image_upload_state");
+      sessionStorage.removeItem("user_identifier");
     };
   }, []);
 
@@ -218,6 +219,9 @@ function ImgUpload() {
   };
 
   const handleUpload = async () => {
+    setLoading(true);
+    setTranslateX(0);
+    setTranslateY(0);
     setLoading(true);
     if (imageFile) {
       const formData = new FormData();
@@ -605,8 +609,8 @@ function ImgUpload() {
       setFileName(parsedState.fileName);
       setNumColors(parsedState.numColors);
       setGetId(parsedState.getId);
-      setTranslateX(parsedState.translateX);
-      setTranslateY(parsedState.translateY);
+      setTranslateX(0);
+      setTranslateY(0);
       setScale(parsedState.scale);
       setRotation(parsedState.rotation);
       setActiveImage(parsedState.activeImage);
@@ -847,48 +851,53 @@ function ImgUpload() {
           </div>
         )}
         {width > 0 && height > 0 ? (
-          <div className="w-full overflow-x-auto" ref={containerRef}>
+          <div className="w-full overflow-x-auto">
             <div
-              className="rectangle mx-auto  !border-dashed"
-              style={{
-                width: `${width}mm`,
-                height: `${height}mm`,
-                border: "1px solid black",
-                position: "relative",
-                overflow: "hidden",
-              }}
-              onDragEnter={preventDefaults}
-              onDragOver={preventDefaults}
-              onDragLeave={preventDefaults}
-              onDrop={handleDrop}
-              onMouseDown={handleMouseDown}
-              onMouseUp={handleMouseUp}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={handleMouseLeave}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
+              className="overflow-y-auto max-h-[70vh] w-max mx-auto"
+              ref={containerRef}
             >
-              {image ? (
-                <img
-                  src={`${image}`}
-                  alt="Uploaded"
-                  style={{
-                    width: `${Math.floor(width * 3.7795275591)}px`,
-                    height: `${Math.floor(height * 3.7795275591)}px`,
-                    transform: `scale(${scale}) translate(${translateX}px, ${translateY}px) rotate(${rotation}deg)`,
-                    cursor: isDragging ? "grabbing" : "zoom-out",
-                    touchAction: "none", // touch actionni to'xtatish uchun
-                    position: "absolute",
-                    top: "0%",
-                    left: "0%",
-                    objectFit: "cover",
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full flex justify-center items-center">
-                  Перетащите изображение сюда
-                </div>
-              )}
+              <div
+                className="rectangle mx-auto  !border-dashed"
+                style={{
+                  width: `${width}mm`,
+                  height: `${height}mm`,
+                  border: "1px solid black",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+                onDragEnter={preventDefaults}
+                onDragOver={preventDefaults}
+                onDragLeave={preventDefaults}
+                onDrop={handleDrop}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+              >
+                {image ? (
+                  <img
+                    src={`${image}`}
+                    alt="Uploaded"
+                    style={{
+                      width: width < height ? "100%" : "auto",
+                      height: width < height ? "auto" : "100%",
+                      transform: `scale(${scale}) translate(${translateX}px, ${translateY}px) rotate(${rotation}deg)`,
+                      cursor: isDragging ? "grabbing" : "zoom-out",
+                      touchAction: "none",
+                      position: "absolute",
+                      top: "0%",
+                      left: "0%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex justify-center items-center">
+                    Перетащите изображение сюда
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ) : (
@@ -1068,7 +1077,6 @@ function ImgUpload() {
                 </div>
 
                 <div className="mx-auto flex w-full justify-center items-center my-4 flex-wrap printsxema">
-                  {/* <img src={`${image}`} alt="" /> */}
                   <br />
                   {schema
                     ? schema.map((group, groupIndex) => (
@@ -1093,7 +1101,6 @@ function ImgUpload() {
                       ))
                     : ""}
                 </div>
-          
               </div>
             )}
           </div>
